@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marketplace Home</title>
+</head>
+<body>
+    <header>
+        <h1>Welcome to the Marketplace</h1>
+        <nav>
+            <ul>
+                {% if user.is_authenticated %}
+                    <li><a href="{% url 'logout' %}">Logout</a></li>
+                    <!-- Later, you can also add: -->
+                    <!-- <li><a href="{% url 'post_item' %}">Post an Item</a></li> -->
+                {% else %}
+                    <li><a href="{% url 'register' %}">Register</a></li>
+                    <li><a href="{% url 'login' %}">Login</a></li>
+                {% endif %}
+            </ul>
+        </nav>        
+    </header>
+
+    <main>
+        <section class="hero">
+            <h2>Discover Amazing Products</h2>
+            <p>Find the best deals and offers on our marketplace.</p>
+        </section>
+
+        <section class="featured-products">
+            <h3>Featured Products</h3>
+            <!-- Product listings will go here -->
+        </section>
+
+        <section class="testimonials">
+            <h3>What Our Customers Say</h3>
+            <!-- Testimonials will go here -->
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2023 Marketplace. All rights reserved.</p>
+    </footer>
+</html>
