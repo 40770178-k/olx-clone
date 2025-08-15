@@ -3,25 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
+    <title>Post an Item</title>
 </head>
 <body>
     <header>
-        <h1>Login to Your Account</h1>
+        <h1>Post an Item</h1>
     </header>
 
     <main>
-        <form method="post">
+        <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
             {{ form.as_p }}
 
-            <button type="submit">Login</button>
+            <button type="submit">Post Item</button>
         </form>
 
-        <p>Don't have an account? <a href="{% url 'register' %}">Register here</a>.</p>
+        <p><a href="{% url 'home' %}">Cancel</a></p>
     </main>
 
     <footer>
         <p>&copy; 2025 Marketplace. All rights reserved.</p>
     </footer>
+</body>
 </html>

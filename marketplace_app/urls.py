@@ -1,6 +1,8 @@
 from django.urls import path
 from .views import (
     HomeView,
+    ItemCreateView,
+    ItemListView,
     UserRegisterView,
     UserLoginView,
     UserLogoutView,
@@ -8,11 +10,11 @@ from .views import (
 )
 
 urlpatterns = [
-    path('', HomeView.as_view(), name='home'),
+    path('', ItemListView.as_view(), name='item_list'),  # Home page shows items
     path('register/', UserRegisterView.as_view(), name='register'),
     path('login/', UserLoginView.as_view(), name='login'),
     path('logout/', UserLogoutView.as_view(), name='logout'),
     path('item/<int:pk>/', ItemDetailView.as_view(), name='item_detail'),
+    path('post_item/', ItemCreateView.as_view(), name='post_item'),
+    path('home/', HomeView.as_view(), name='home'),
 ]
-# This file defines the URL patterns for the marketplace application.
-# It includes paths for the home page, user registration, login, logout, and item detail

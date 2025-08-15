@@ -12,3 +12,9 @@ class UserRegistrationForm(UserCreationForm):
 class UserLoginForm(forms.Form):
     username = forms.CharField(max_length=150)
     password = forms.CharField(widget=forms.PasswordInput)
+
+class ItemForm(forms.Form):
+    name = forms.CharField(max_length=100)
+    description = forms.CharField(widget=forms.Textarea)
+    price = forms.DecimalField(max_digits=10, decimal_places=2)
+    image = forms.ImageField(required=False)
