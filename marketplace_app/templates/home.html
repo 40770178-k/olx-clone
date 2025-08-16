@@ -11,7 +11,10 @@
         <nav>
             <ul>
                 {% if user.is_authenticated %}
-                    <li><a href="{% url 'logout' %}">Logout</a></li>
+                <form action="{% url 'logout' %}" method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit">Logout</button>
+                </form>                
                     <!-- Later, you can also add: -->
                     <!-- <li><a href="{% url 'post_item' %}">Post an Item</a></li> -->
                 {% else %}
