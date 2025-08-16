@@ -24,7 +24,6 @@ class UserLoginView(LoginView):
     template_name = 'login.html'
 
 class UserLogoutView(LogoutView):
-    template_name = 'logout.html'
     next_page = reverse_lazy('home')
 
 
@@ -36,7 +35,7 @@ class ItemCreateView(LoginRequiredMixin, CreateView):
     success_url = reverse_lazy('item_list')
 
     def form_valid(self, form):
-        form.instance.user = self.request.user
+        form.instance.posted_by = self.request.user
         return super().form_valid(form)
     
 class ItemDetailView(DetailView):
