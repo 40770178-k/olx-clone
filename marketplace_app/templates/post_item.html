@@ -8,6 +8,20 @@
 <body>
     <header>
         <h1>Post an Item</h1>
+        <nav>
+            <ul>
+                <li><a href="{% url 'home' %}">Home</a></li>
+                <li><a href="{% url 'item_list' %}">Browse Items</a></li>
+                {% if user.is_authenticated %}
+                    <li>
+                        <form action="{% url 'logout' %}" method="post" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit">Logout</button>
+                        </form>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
     </header>
 
     <main>

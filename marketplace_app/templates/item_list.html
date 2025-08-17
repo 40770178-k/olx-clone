@@ -3,22 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Post an Item</title>
+    <title>Item Listings</title>
 </head>
 <body>
     <header>
-        <h1>Post an Item</h1>
+        <h1>Item Listings</h1>
+        <nav>
+            <ul>
+                <li><a href="{% url 'home' %}">Home</a></li>
+                {% if user.is_authenticated %}
+                    <li><a href="{% url 'post_item' %}">Post an Item</a></li>
+                    <li>
+                        <form action="{% url 'logout' %}" method="post" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit">Logout</button>
+                        </form>
+                    </li>
+                {% else %}
+                    <li><a href="{% url 'login' %}">Login</a></li>
+                    <li><a href="{% url 'register' %}">Register</a></li>
+                {% endif %}
+            </ul>
+        </nav>
     </header>
 
     <main>
-        <form method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-            {{ form.as_p }}
-
-            <button type="submit">Post Item</button>
-        </form>
-
-        <p><a href="{% url 'home' %}">Cancel</a></p>
+        {% if object_list %}
+            <div class="items-grid">
+                {% for item in object_list %}
+                    <div class="item-card">
+                        <h3><a href="{% url 'item_detail' item.pk %}">{{ item.title }}</a></h3>
+                        <p>{{ item.description|truncatewords:20 }}</p>
+                        <p><strong>Price: ${{ item.price }}</strong></p>
+                        {% if item.image %}
+                            <img src="{{ item.image.url }}" alt="{{ item.title }}" style="max-width:200px; height:auto;">
+                        {% endif %}
+                        <p><small>Posted by: {{ item.posted_by.username }} on {{ item.posted_on|date:"M d, Y" }}</small></p>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>No items posted yet. <a href="{% url 'post_item' %}">Be the first to post an item!</a></p>
+        {% endif %}
     </main>
 
     <footer>

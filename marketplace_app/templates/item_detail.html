@@ -3,18 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ item.title }}</title>
+    <title>{{ item.title }} - Marketplace</title>
 </head>
 <body>
-    <h1>{{ item.title }}</h1>
-    <p>{{ item.description }}</p>
-    <p>Price: {{ item.price }}</p>
-    {% if item.image %}
-        <img src="{{ item.image.url }}" alt="{{ item.title }}" style="max-width:300px;">
-    {% endif %}
-    <p><a href="{% url 'item_list' %}">Back to Listings</a></p>
+    <header>
+        <h1>{{ item.title }}</h1>
+        <nav>
+            <ul>
+                <li><a href="{% url 'home' %}">Home</a></li>
+                <li><a href="{% url 'item_list' %}">Browse Items</a></li>
+                {% if user.is_authenticated %}
+                    <li><a href="{% url 'post_item' %}">Post an Item</a></li>
+                    <li>
+                        <form action="{% url 'logout' %}" method="post" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit">Logout</button>
+                        </form>
+                    </li>
+                {% else %}
+                    <li><a href="{% url 'login' %}">Login</a></li>
+                    <li><a href="{% url 'register' %}">Register</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <div class="item-details">
+            <p>{{ item.description }}</p>
+            <p><strong>Price: ${{ item.price }}</strong></p>
+            {% if item.image %}
+                <img src="{{ item.image.url }}" alt="{{ item.title }}" style="max-width:400px; height:auto;">
+            {% endif %}
+            <p><small>Posted by: {{ item.posted_by.username }} on {{ item.posted_on|date:"M d, Y" }}</small></p>
+        </div>
+        <p><a href="{% url 'item_list' %}">← Back to Listings</a></p>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Marketplace. All rights reserved.</p>
+    </footer>
 </body>
 </html>
-<footer>
-    <p>&copy; 2025 Marketplace. All rights reserved.</p>
-</footer>
