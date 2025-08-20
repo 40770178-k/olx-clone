@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Item Listings</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <header>
@@ -32,12 +35,16 @@
             <div class="items-grid">
                 {% for item in object_list %}
                     <div class="item-card">
+                        {% if item.image %}
+                            <img src="{{ item.image.url }}" alt="{{ item.title }}" class="item-image">
+                        {% else %}
+                            <div class="no-image-placeholder">
+                                <span>No Image</span>
+                            </div>
+                        {% endif %}
                         <h3><a href="{% url 'item_detail' item.pk %}">{{ item.title }}</a></h3>
                         <p>{{ item.description|truncatewords:20 }}</p>
                         <p><strong>Price: ${{ item.price }}</strong></p>
-                        {% if item.image %}
-                            <img src="{{ item.image.url }}" alt="{{ item.title }}" style="max-width:200px; height:auto;">
-                        {% endif %}
                         <p><small>Posted by: {{ item.posted_by.username }} on {{ item.posted_on|date:"M d, Y" }}</small></p>
                     </div>
                 {% endfor %}
