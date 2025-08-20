@@ -30,9 +30,34 @@
     <main>
         <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit">Post Item</button>
-        </form>
+            <p>
+              {{ form.title.label_tag }}<br>
+              {{ form.title }}
+            </p>
+            <p>
+              {{ form.description.label_tag }}<br>
+              {{ form.description }}
+            </p>
+            <p>
+              {{ form.price.label_tag }}<br>
+              {{ form.price }}
+            </p>
+            <p>
+              {{ form.category.label_tag }}<br>
+              {{ form.category }}
+            </p>
+            <p>
+              {{ form.location.label_tag }}<br>
+              {{ form.location }}
+              <small>e.g., Nairobi, Mombasa, Kisumu…</small>
+            </p>
+            <p>
+              {{ form.image.label_tag }}<br>
+              {{ form.image }}
+            </p>
+            <button type="submit">Publish</button>
+          </form>
+          
 
         <p><a href="{% url 'home' %}">Cancel</a></p>
     </main>

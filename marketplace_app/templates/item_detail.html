@@ -33,6 +33,8 @@
 
     <main>
         <div class="item-details">
+            <p class="item-category"><strong>Category:</strong> {{ item.category }}</p>
+            <p class="item-location"><strong>Location:</strong> {{ item.location }}</p>
             <p>{{ item.description }}</p>
             <p><strong>Price: ${{ item.price }}</strong></p>
             {% if item.image %}
