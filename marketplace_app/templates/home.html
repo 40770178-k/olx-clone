@@ -18,6 +18,7 @@
                 {% if user.is_authenticated %}
                     <li><a href="{% url 'post_item' %}">Post an Item</a></li>
                     <li>Welcome, {{ user.username }}!</li>
+                    <a href="{% url 'user_profile' user.username %}">Profile</a>
                     <li>
                         <form action="{% url 'logout' %}" method="post" style="display:inline;">
                             {% csrf_token %}
