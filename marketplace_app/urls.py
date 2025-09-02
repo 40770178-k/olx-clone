@@ -7,6 +7,7 @@ from .views import (
     UserLoginView,
     UserLogoutView,
     ItemDetailView,
+    UserprofileView,
 )
 
 urlpatterns = [
@@ -17,4 +18,5 @@ urlpatterns = [
     path('item/<int:pk>/', ItemDetailView.as_view(), name='item_detail'),
     path('post_item/', ItemCreateView.as_view(), name='post_item'),
     path('', HomeView.as_view(), name='home'),
+    path('profile/<str:username>/', UserprofileView.as_view(), name='user_profile'),
 ]
