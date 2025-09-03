@@ -632,3 +632,65 @@ footer p {
 .p-0 { padding: 0; }
 .p-1 { padding: 1rem; }
 .p-2 { padding: 2rem; }
+
+/* Layout helpers for base.html */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+.site-header {
+    background: var(--card-bg);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border-color);
+    box-shadow: var(--shadow-light);
+}
+
+.header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 0;
+}
+
+.site-title a {
+    text-decoration: none;
+    color: var(--text-primary);
+}
+
+.site-nav ul {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.site-footer {
+    background: var(--dark-bg);
+    color: white;
+    margin-top: 3rem;
+    padding: 2rem 0;
+}
+
+.page-title {
+    margin-bottom: 1rem;
+}
+
+.item-detail-image {
+    width: 100%;
+    max-width: 500px;
+    height: auto;
+    border-radius: 12px;
+    box-shadow: var(--shadow-medium);
+}
+
+/* Button variants */
+.btn-primary { background: var(--gradient-primary); }
+.btn-danger { background: var(--error-color); }
+.btn-link {
+    background: transparent;
+    color: var(--text-primary);
+    padding: 0.5rem 1rem;
+}
+.btn-link:hover {
+    background: rgba(0,0,0,0.05);
+}

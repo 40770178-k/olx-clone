@@ -1,37 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
-    {% load static %}
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-</head>
-<body>
-    <header>
-        <h1>Login to Your Account</h1>
-        <nav>
-            <ul>
-                <li><a href="{% url 'home' %}">Home</a></li>
-                <li><a href="{% url 'item_list' %}">Browse Items</a></li>
-                <li><a href="{% url 'register' %}">Register</a></li>
-            </ul>
-        </nav>
-    </header>
-
-    <main>
-        <form method="post">
-            {% csrf_token %}
-            {{ form.as_p }}
-
-            <button type="submit">Login</button>
-        </form>
-
-        <p>Don't have an account? <a href="{% url 'register' %}">Register here</a>.</p>
-    </main>
-
-    <footer>
-        <p>&copy; 2025 Marketplace. All rights reserved.</p>
-    </footer>
-</html>
+{% extends 'base.html' %}
+{% block title %}Login{% endblock %}
+{% block content %}
+    <h1>Login to Your Account</h1>
+    <form method="post" class="form">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Login</button>
+    </form>
+    <p>Don't have an account? <a href="{% url 'register' %}">Register here</a>.</p>
+{% endblock %}
