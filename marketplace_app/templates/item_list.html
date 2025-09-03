@@ -1,63 +1,27 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Item Listings</title>
-    {% load static %}
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-</head>
-<body>
-    <header>
-        <h1>Item Listings</h1>
-        <nav>
-            <ul>
-                <li><a href="{% url 'home' %}">Home</a></li>
-                {% if user.is_authenticated %}
-                    <li><a href="{% url 'post_item' %}">Post an Item</a></li>
-                    <li>
-                        <form action="{% url 'logout' %}" method="post" style="display:inline;">
-                            {% csrf_token %}
-                            <button type="submit">Logout</button>
-                        </form>
-                    </li>
-                {% else %}
-                    <li><a href="{% url 'login' %}">Login</a></li>
-                    <li><a href="{% url 'register' %}">Register</a></li>
-                {% endif %}
-            </ul>
-        </nav>
-    </header>
-
-    <main>
-        {% if object_list %}
-            <div class="items-grid">
-                {% for item in object_list %}
-                    <div class="item-card">
-                        {% if item.image %}
-                            <img src="{{ item.image.url }}" alt="{{ item.title }}" class="item-image">
-                        {% else %}
-                            <div class="no-image-placeholder">
-                                <span>No Image</span>
-                            </div>
-                        {% endif %}
-                        <h3><a href="{% url 'item_detail' item.pk %}">{{ item.title }}</a></h3>
-                        <p class="item-category"><strong>Category:</strong> {{ item.category }}</p>
-                        <p class="item-location"><strong>Location:</strong> {{ item.location }}</p>
-                        <p>{{ item.description|truncatewords:20 }}</p>
-                        <p><strong>Price: ${{ item.price }}</strong></p>
-                        <p><small>Posted by: {{ item.posted_by.username }} on {{ item.posted_on|date:"M d, Y" }}</small></p>
-                    </div>
-                {% endfor %}
-            </div>
-        {% else %}
-            <p>No items posted yet. <a href="{% url 'post_item' %}">Be the first to post an item!</a></p>
-        {% endif %}
-    </main>
-
-    <footer>
-        <p>&copy; 2025 Marketplace. All rights reserved.</p>
-    </footer>
-</body>
-</html>
+{% extends 'base.html' %}
+{% block title %}Item Listings{% endblock %}
+{% block content %}
+    {% if object_list %}
+        <div class="items-grid">
+            {% for item in object_list %}
+                <div class="item-card">
+                    {% if item.image %}
+                        <img src="{{ item.image.url }}" alt="{{ item.title }}" class="item-image">
+                    {% else %}
+                        <div class="no-image-placeholder">
+                            <span>No Image</span>
+                        </div>
+                    {% endif %}
+                    <h3><a href="{% url 'item_detail' item.pk %}">{{ item.title }}</a></h3>
+                    <p class="item-category"><strong>Category:</strong> {{ item.category }}</p>
+                    <p class="item-location"><strong>Location:</strong> {{ item.location }}</p>
+                    <p>{{ item.description|truncatewords:20 }}</p>
+                    <p><strong>Price: ${{ item.price }}</strong></p>
+                    <p><small>Posted by: {{ item.posted_by.username }} on {{ item.posted_on|date:"M d, Y" }}</small></p>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>No items posted yet. <a href="{% url 'post_item' %}">Be the first to post an item!</a></p>
+    {% endif %}
+{% endblock %}
