@@ -4,8 +4,8 @@ from django.contrib.auth import login
 from django.urls import reverse_lazy
 from .forms import ItemForm, UserRegistrationForm
 from .models import Item
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic.edit import CreateView
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
 
@@ -59,10 +59,30 @@ class UserprofileView(ListView):
     def get_queryset(self):
         username = self.kwargs.get('username')
         user = get_object_or_404(User, username=username)
-        return Item.objects.filter(user=user).order_by('-posted_on')
+        return Item.objects.filter(posted_by=user).order_by('-posted_on')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         username = self.kwargs.get('username')
         context['profile_user'] = get_object_or_404(User, username=username)
         return context
+    
+class ItemUpdateView(UserPassesTestMixin, UpdateView):
+    model = Item
+    fields = ['title', 'description', 'price', 'location', 'image']
+    template_name = 'item_edit.html'
+
+    def get_success_url(self):
+        return reverse_lazy('item_detail', kwargs={'pk': self.object.pk})
+
+    def test_func(self):
+        return self.get_object().posted_by == self.request.user
+
+
+class ItemDeleteView(UserPassesTestMixin, DeleteView):
+    model = Item
+    template_name = 'item_delete.html'
+    success_url = reverse_lazy('item_list')
+
+    def test_func(self):
+        return self.get_object().posted_by == self.request.user
