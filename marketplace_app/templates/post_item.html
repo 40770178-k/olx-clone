@@ -1,69 +1,35 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Post an Item</title>
-    {% load static %}
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-</head>
-<body>
-    <header>
-        <h1>Post an Item</h1>
-        <nav>
-            <ul>
-                <li><a href="{% url 'home' %}">Home</a></li>
-                <li><a href="{% url 'item_list' %}">Browse Items</a></li>
-                {% if user.is_authenticated %}
-                    <li>
-                        <form action="{% url 'logout' %}" method="post" style="display:inline;">
-                            {% csrf_token %}
-                            <button type="submit">Logout</button>
-                        </form>
-                    </li>
-                {% endif %}
-            </ul>
-        </nav>
-    </header>
-
-    <main>
-        <form method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-            <p>
-              {{ form.title.label_tag }}<br>
-              {{ form.title }}
-            </p>
-            <p>
-              {{ form.description.label_tag }}<br>
-              {{ form.description }}
-            </p>
-            <p>
-              {{ form.price.label_tag }}<br>
-              {{ form.price }}
-            </p>
-            <p>
-              {{ form.category.label_tag }}<br>
-              {{ form.category }}
-            </p>
-            <p>
-              {{ form.location.label_tag }}<br>
-              {{ form.location }}
-              <small>e.g., Nairobi, Mombasa, Kisumu…</small>
-            </p>
-            <p>
-              {{ form.image.label_tag }}<br>
-              {{ form.image }}
-            </p>
-            <button type="submit">Publish</button>
-          </form>
-          
-
-        <p><a href="{% url 'home' %}">Cancel</a></p>
-    </main>
-
-    <footer>
-        <p>&copy; 2025 Marketplace. All rights reserved.</p>
-    </footer>
-</body>
-</html>
+{% extends 'base.html' %}
+{% block title %}Post an Item{% endblock %}
+{% block content %}
+    <h1>Post an Item</h1>
+    <form method="post" enctype="multipart/form-data" class="form">
+        {% csrf_token %}
+        <p>
+          {{ form.title.label_tag }}<br>
+          {{ form.title }}
+        </p>
+        <p>
+          {{ form.description.label_tag }}<br>
+          {{ form.description }}
+        </p>
+        <p>
+          {{ form.price.label_tag }}<br>
+          {{ form.price }}
+        </p>
+        <p>
+          {{ form.category.label_tag }}<br>
+          {{ form.category }}
+        </p>
+        <p>
+          {{ form.location.label_tag }}<br>
+          {{ form.location }}
+          <small>e.g., Nairobi, Mombasa, Kisumu…</small>
+        </p>
+        <p>
+          {{ form.image.label_tag }}<br>
+          {{ form.image }}
+        </p>
+        <button type="submit" class="btn btn-primary">Publish</button>
+      </form>
+    <p><a href="{% url 'home' %}">Cancel</a></p>
+{% endblock %}
