@@ -8,6 +8,8 @@ from .views import (
     UserLogoutView,
     ItemDetailView,
     UserprofileView,
+    ItemDeleteView,
+    ItemUpdateView,
 )
 
 urlpatterns = [
@@ -19,4 +21,7 @@ urlpatterns = [
     path('post_item/', ItemCreateView.as_view(), name='post_item'),
     path('', HomeView.as_view(), name='home'),
     path('profile/<str:username>/', UserprofileView.as_view(), name='user_profile'),
+    path('item/<int:pk>/edit/', ItemUpdateView.as_view(), name='item_edit'),
+    path('item/<int:pk>/delete/', ItemDeleteView.as_view(), name='item_delete'),
+
 ]
