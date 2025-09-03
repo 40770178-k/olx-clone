@@ -1,56 +1,18 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Marketplace Home</title>
-    {% load static %}
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-</head>
-<body>
-    <header>
-        <h1>Welcome to the Marketplace</h1>
-        <nav>
-            <ul>
-                <li><a href="{% url 'home' %}">Home</a></li>
-                <li><a href="{% url 'item_list' %}">Browse Items</a></li>
-                {% if user.is_authenticated %}
-                    <li><a href="{% url 'post_item' %}">Post an Item</a></li>
-                    <li>Welcome, {{ user.username }}!</li>
-                    <a href="{% url 'user_profile' user.username %}">Profile</a>
-                    <li>
-                        <form action="{% url 'logout' %}" method="post" style="display:inline;">
-                            {% csrf_token %}
-                            <button type="submit">Logout</button>
-                        </form>
-                    </li>
-                {% else %}
-                    <li><a href="{% url 'register' %}">Register</a></li>
-                    <li><a href="{% url 'login' %}">Login</a></li>
-                {% endif %}
-            </ul>
-        </nav>        
-    </header>
+{% extends 'base.html' %}
+{% block title %}Marketplace Home{% endblock %}
+{% block content %}
+    <section class="hero">
+        <h2>Discover Amazing Products</h2>
+        <p>Find the best deals and offers on our marketplace.</p>
+    </section>
 
-    <main>
-        <section class="hero">
-            <h2>Discover Amazing Products</h2>
-            <p>Find the best deals and offers on our marketplace.</p>
-        </section>
+    <section class="featured-products">
+        <h3>Featured Products</h3>
+        <!-- Product listings will go here -->
+    </section>
 
-        <section class="featured-products">
-            <h3>Featured Products</h3>
-            <!-- Product listings will go here -->
-        </section>
-
-        <section class="testimonials">
-            <h3>What Our Customers Say</h3>
-            <!-- Testimonials will go here -->
-        </section>
-    </main>
-
-    <footer>
-        <p>&copy; 2025 Marketplace. All rights reserved.</p>
-    </footer>
-</html>
+    <section class="testimonials">
+        <h3>What Our Customers Say</h3>
+        <!-- Testimonials will go here -->
+    </section>
+{% endblock %}
