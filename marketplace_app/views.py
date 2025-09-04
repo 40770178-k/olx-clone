@@ -8,6 +8,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
+from django.db.models import Q
 
 class HomeView(TemplateView):
     template_name = 'home.html'
@@ -47,8 +48,44 @@ class ItemDetailView(DetailView):
 
 class ItemListView(ListView):
     model = Item
-    template_name = 'item_list.html'
-    ordering = ['-posted_on']
+    template_name = "item_list.html"
+    context_object_name = "items"
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+
+        # Search
+        q = self.request.GET.get("q")
+        if q:
+            queryset = queryset.filter(
+                Q(title__icontains=q) | Q(description__icontains=q)
+            )
+
+        # Location filter
+        location = self.request.GET.get("location")
+        if location and location.lower() != "all":
+            queryset = queryset.filter(location__icontains=location)
+
+        # Price filter
+        min_price = self.request.GET.get("min_price")
+        max_price = self.request.GET.get("max_price")
+        if min_price:
+            queryset = queryset.filter(price__gte=min_price)
+        if max_price:
+            queryset = queryset.filter(price__lte=max_price)
+
+        # Sorting
+        sort = self.request.GET.get("sort")
+        if sort == "newest":
+            queryset = queryset.order_by("-posted_on")
+        elif sort == "price_low":
+            queryset = queryset.order_by("price")
+        elif sort == "price_high":
+            queryset = queryset.order_by("-price")
+
+        return queryset
+
+    
 
 class UserprofileView(ListView):
     model = Item
