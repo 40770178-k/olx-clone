@@ -13,7 +13,7 @@ from .views import (
 )
 
 urlpatterns = [
-    path('item_list', ItemListView.as_view(), name='item_list'),  # Home page shows items
+    path('item_list', ItemListView.as_view(), name='item_list'),  
     path('register/', UserRegisterView.as_view(), name='register'),
     path('login/', UserLoginView.as_view(), name='login'),
     path('logout/', UserLogoutView.as_view(), name='logout'),

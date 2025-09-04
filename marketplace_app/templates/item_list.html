@@ -1,27 +1,51 @@
 {% extends 'base.html' %}
 {% block title %}Item Listings{% endblock %}
 {% block content %}
-    {% if object_list %}
-        <div class="items-grid">
-            {% for item in object_list %}
-                <div class="item-card">
-                    {% if item.image %}
-                        <img src="{{ item.image.url }}" alt="{{ item.title }}" class="item-image">
-                    {% else %}
-                        <div class="no-image-placeholder">
-                            <span>No Image</span>
-                        </div>
-                    {% endif %}
-                    <h3><a href="{% url 'item_detail' item.pk %}">{{ item.title }}</a></h3>
-                    <p class="item-category"><strong>Category:</strong> {{ item.category }}</p>
-                    <p class="item-location"><strong>Location:</strong> {{ item.location }}</p>
-                    <p>{{ item.description|truncatewords:20 }}</p>
-                    <p><strong>Price: ${{ item.price }}</strong></p>
-                    <p><small>Posted by: {{ item.posted_by.username }} on {{ item.posted_on|date:"M d, Y" }}</small></p>
-                </div>
-            {% endfor %}
-        </div>
-    {% else %}
-        <p>No items posted yet. <a href="{% url 'post_item' %}">Be the first to post an item!</a></p>
-    {% endif %}
+
+<h2 class="mb-4">Browse Items</h2>
+
+<!-- 🔍 Search & Filter Form -->
+<form method="get" class="filter-form mb-4">
+    <input type="text" name="q" placeholder="Search..." value="{{ request.GET.q }}">
+    
+    <input type="text" name="location" placeholder="Location" value="{{ request.GET.location }}">
+    
+    <input type="number" name="min_price" placeholder="Min Price" value="{{ request.GET.min_price }}">
+    <input type="number" name="max_price" placeholder="Max Price" value="{{ request.GET.max_price }}">
+
+    <select name="sort">
+        <option value="">Sort By</option>
+        <option value="newest" {% if request.GET.sort == "newest" %}selected{% endif %}>Newest</option>
+        <option value="price_low" {% if request.GET.sort == "price_low" %}selected{% endif %}>Lowest Price</option>
+        <option value="price_high" {% if request.GET.sort == "price_high" %}selected{% endif %}>Highest Price</option>
+    </select>
+
+    <button type="submit">Apply</button>
+</form>
+
+<!-- 🛒 Items Grid -->
+{% if object_list %}
+    <div class="items-grid">
+        {% for item in object_list %}
+            <div class="item-card">
+                {% if item.image %}
+                    <img src="{{ item.image.url }}" alt="{{ item.title }}" class="item-image">
+                {% else %}
+                    <div class="no-image-placeholder">
+                        <span>No Image</span>
+                    </div>
+                {% endif %}
+                <h3><a href="{% url 'item_detail' item.pk %}">{{ item.title }}</a></h3>
+                <p class="item-category"><strong>Category:</strong> {{ item.category }}</p>
+                <p class="item-location"><strong>Location:</strong> {{ item.location }}</p>
+                <p>{{ item.description|truncatewords:20 }}</p>
+                <p><strong>Price: ${{ item.price }}</strong></p>
+                <p><small>Posted by: {{ item.posted_by.username }} on {{ item.posted_on|date:"M d, Y" }}</small></p>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <p>No items posted yet. <a href="{% url 'post_item' %}">Be the first to post an item!</a></p>
+{% endif %}
+
 {% endblock %}
