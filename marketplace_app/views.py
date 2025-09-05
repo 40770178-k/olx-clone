@@ -2,8 +2,8 @@ from django.views.generic import ListView, FormView, DetailView, TemplateView
 from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib.auth import login
 from django.urls import reverse_lazy
-from .forms import ItemForm, UserRegistrationForm
-from .models import Item
+from .forms import ItemForm, UserRegistrationForm, ProfileForm
+from .models import Item, Profile
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.shortcuts import get_object_or_404
@@ -123,3 +123,14 @@ class ItemDeleteView(UserPassesTestMixin, DeleteView):
 
     def test_func(self):
         return self.get_object().posted_by == self.request.user
+    
+class EditProfileView(UpdateView):
+    model = Profile
+    form_class = ProfileForm
+    template_name = 'marketplace_app/edit_profile.html'
+
+    def get_object(self, queryset=None):
+        return self.request.user.profile
+
+    def get_success_url(self):
+        return reverse_lazy('profile', kwargs={'username': self.request.user.username})
