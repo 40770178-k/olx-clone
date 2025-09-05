@@ -2,6 +2,8 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from .models import Item
+from django import forms
+from .models import Profile
 
 class UserRegistrationForm(UserCreationForm):
     email = forms.EmailField(required=True)
@@ -26,3 +28,13 @@ class ItemForm(forms.ModelForm):
             if not data:
                 return "Unknown"
             return data
+        
+
+
+class ProfileForm(forms.ModelForm):
+    class Meta:
+        model = Profile
+        fields = ['bio', 'location', 'profile_picture']
+        widgets = {
+            'bio': forms.Textarea(attrs={'rows': 4}),
+        }
