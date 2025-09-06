@@ -11,6 +11,9 @@ from .views import (
     UserprofileView,
     ItemDeleteView,
     ItemUpdateView,
+    FavoriteListView,
+    AddFavoriteView,
+    RemoveFavoriteView,
 )
 
 urlpatterns = [
@@ -30,4 +33,9 @@ urlpatterns = [
     # Profiles (specific routes BEFORE dynamic username)
     path('profile/edit/', EditProfileView.as_view(), name='edit_profile'),
     path('profile/<str:username>/', UserprofileView.as_view(), name='user_profile'),
+
+    # Favorites
+    path("favorites/", FavoriteListView.as_view(), name="favorite_list"),
+    path("favorites/add/<int:pk>/", AddFavoriteView.as_view(), name="add_favorite"),
+    path("favorites/remove/<int:pk>/", RemoveFavoriteView.as_view(), name="remove_favorite"),
 ]
