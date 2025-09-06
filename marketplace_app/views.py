@@ -3,10 +3,10 @@ from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib.auth import login
 from django.urls import reverse_lazy
 from .forms import ItemForm, UserRegistrationForm, ProfileForm
-from .models import Item, Profile
+from .models import Item, Profile, Favorite
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from django.contrib.auth.models import User
 from django.db.models import Q
 
@@ -45,6 +45,17 @@ class ItemDetailView(DetailView):
         model = Item
         template_name = 'item_detail.html'
         context_object_name = 'item'
+        
+        def get_context_data(self, **kwargs):
+            context = super().get_context_data(**kwargs)
+            if self.request.user.is_authenticated:
+                context['is_favorited'] = Favorite.objects.filter(
+                    user=self.request.user, 
+                    item=self.object
+                ).exists()
+            else:
+                context['is_favorited'] = False
+            return context
 
 class ItemListView(ListView):
     model = Item
@@ -134,3 +145,34 @@ class EditProfileView(UpdateView):
 
     def get_success_url(self):
         return reverse_lazy('profile', kwargs={'username': self.request.user.username})
+    
+class AddFavoriteView(LoginRequiredMixin, CreateView):
+    model = Favorite
+    fields = []  # no form, we just set user & item in code
+
+    def post(self, request, *args, **kwargs):
+        item = get_object_or_404(Item, pk=kwargs["pk"])
+        Favorite.objects.get_or_create(user=request.user, item=item)
+        return redirect("item_detail", pk=item.pk)
+    
+class RemoveFavoriteView(LoginRequiredMixin, DeleteView):
+    model = Favorite
+
+    def get_object(self, queryset=None):
+        item = get_object_or_404(Item, pk=self.kwargs["pk"])
+        return Favorite.objects.get(user=self.request.user, item=item)
+
+    def post(self, request, *args, **kwargs):
+        fav = self.get_object()
+        fav.delete()
+        return redirect("item_detail", pk=self.kwargs["pk"])
+    
+class FavoriteListView(LoginRequiredMixin, ListView):
+    model = Favorite
+    template_name = "favorite_list.html"
+    context_object_name = "favorites"
+
+    def get_queryset(self):
+        return Favorite.objects.filter(user=self.request.user).select_related("item")
+
+
