@@ -13,6 +13,28 @@
             <p class="mb-1"><strong>Location:</strong> {{ item.location }}</p>
             <p class="mb-3">{{ item.description }}</p>
             <p class="fs-5 fw-semibold">${{ item.price }}</p>
+            
+            <!-- Favorite Button -->
+            {% if user.is_authenticated and user != object.posted_by %}
+                <div class="mb-3">
+                    {% if is_favorited %}
+                        <form method="post" action="{% url 'remove_favorite' object.pk %}" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-danger btn-sm">
+                                <i class="bi bi-heart-fill"></i> Remove from Favorites
+                            </button>
+                        </form>
+                    {% else %}
+                        <form method="post" action="{% url 'add_favorite' object.pk %}" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-heart"></i> Add to Favorites
+                            </button>
+                        </form>
+                    {% endif %}
+                </div>
+            {% endif %}
+            
             {% if user == object.posted_by %}
                 <div class="d-flex gap-2 mb-3">
                     <a class="btn btn-primary btn-sm" href="{% url 'item_edit' object.pk %}">Edit</a>
