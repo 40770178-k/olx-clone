@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block title %}Inbox{% endblock %}
+{% block content %}
+<div class="container py-3">
+  <h2 class="h5 mb-3">Inbox</h2>
+  {% if conversations %}
+    <ul class="list-group">
+      {% for c in conversations %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <div>
+            <div><strong>{{ c.item.title }}</strong></div>
+            <div class="small text-muted">With {% if user.id == c.buyer_id %}{{ c.seller.username }}{% else %}{{ c.buyer.username }}{% endif %}</div>
+          </div>
+          <a class="btn btn-sm btn-outline-primary" href="{% url 'conversation-detail' c.id %}">Open</a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <div class="text-muted">No conversations yet.</div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% extends "base.html" %}
+{% block content %}
+<h1>Inbox</h1>
+<ul class="conversation-list">
+  {% for conv in conversations %}
+    <li>
+      <a href="{% url 'conversation-detail' conv.pk %}">
+        {{ conv.item.title }} —
+        {% if request.user == conv.buyer %} Seller: {{ conv.seller.username }} {% else %} Buyer: {{ conv.buyer.username }} {% endif %}
+        <small>{{ conv.last_message_at|default:conv.created_at }}</small>
+      </a>
+    </li>
+  {% empty %}
+    <li>No conversations yet.</li>
+  {% endfor %}
+</ul>
+{% endblock %}
