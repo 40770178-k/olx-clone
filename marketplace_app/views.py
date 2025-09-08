@@ -3,7 +3,7 @@ from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib.auth import login
 from django.urls import reverse_lazy
 from .forms import ItemForm, UserRegistrationForm, ProfileForm
-from .models import Item, Profile, Favorite
+from .models import Item, Profile, Favorite, Conversation
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.shortcuts import get_object_or_404, redirect
@@ -176,3 +176,29 @@ class FavoriteListView(LoginRequiredMixin, ListView):
         return Favorite.objects.filter(user=self.request.user).select_related("item")
 
 
+class InboxView(LoginRequiredMixin, ListView):
+    model = Conversation
+    template_name = "inbox.html"   # one folder before templates
+    context_object_name = "conversations"
+    paginate_by = 20
+
+    def get_queryset(self):
+        user = self.request.user
+        return Conversation.objects.filter(Q(buyer=user) | Q(seller=user)).select_related("item", "buyer", "seller").prefetch_related("messages")
+
+class ConversationDetailView(LoginRequiredMixin, TemplateView):
+    template_name = "conversation_detail.html"  # one folder before templates
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        conv_id = self.kwargs.get("pk")
+        conv = get_object_or_404(Conversation, pk=conv_id)
+        user = self.request.user
+        # ensure the user is part of the conversation
+        if not (conv.buyer == user or conv.seller == user):
+            raise PermissionError("Not allowed")
+        # mark unread messages from other side as read
+        conv.messages.filter(read=False).exclude(sender=user).update(read=True)
+        ctx["conversation"] = conv
+        ctx["messages"] = conv.messages.all()
+        return ctx
