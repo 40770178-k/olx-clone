@@ -3,10 +3,10 @@ from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib.auth import login
 from django.urls import reverse_lazy
 from .forms import ItemForm, UserRegistrationForm, ProfileForm
-from .models import Item, Profile, Favorite, Conversation
+from .models import Item, Profile, Favorite, Conversation, Message
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth.models import User
 from django.db.models import Q
 
@@ -55,6 +55,10 @@ class ItemDetailView(DetailView):
                 ).exists()
             else:
                 context['is_favorited'] = False
+            if self.request.user.is_authenticated and self.request.user != self.object.posted_by:
+                convo = Conversation.objects.filter(item=self.object, buyer=self.request.user, seller=self.object.posted_by).first()
+                if convo:
+                    context['conversation_id'] = convo.id
             return context
 
 class ItemListView(ListView):
@@ -202,3 +206,16 @@ class ConversationDetailView(LoginRequiredMixin, TemplateView):
         ctx["conversation"] = conv
         ctx["messages"] = conv.messages.all()
         return ctx
+
+
+class StartConversationView(LoginRequiredMixin, TemplateView):
+    template_name = "conversation_detail.html"
+
+    def post(self, request, *args, **kwargs):
+        item = get_object_or_404(Item, pk=kwargs.get("pk"))
+        seller = item.posted_by
+        buyer = request.user
+        if buyer == seller:
+            return redirect("item_detail", pk=item.pk)
+        conv, created = Conversation.objects.get_or_create(item=item, buyer=buyer, seller=seller)
+        return redirect("conversation-detail", pk=conv.pk)
