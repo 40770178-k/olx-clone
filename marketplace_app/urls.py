@@ -16,6 +16,7 @@ from .views import (
     RemoveFavoriteView,
     InboxView,
     ConversationDetailView,
+    StartConversationView,
 )
 
 urlpatterns = [
@@ -44,4 +45,5 @@ urlpatterns = [
     # Conversations & Messages
     path("inbox/", InboxView.as_view(), name="inbox"),
     path("conversations/<int:pk>/", ConversationDetailView.as_view(), name="conversation-detail"),
+    path("item/<int:pk>/start-conversation/", StartConversationView.as_view(), name="start-conversation"),
 ]
