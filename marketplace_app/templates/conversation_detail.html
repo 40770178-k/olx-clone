@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+{% block title %}Chat{% endblock %}
+{% block content %}
+<div class="container py-3">
+    <h2 class="h5 mb-3">Conversation about: {{ conversation.item.title }}</h2>
+    <div class="border rounded p-3 mb-3" id="messages" style="height: 400px; overflow-y: auto; background: #fafafa;">
+        {% for m in messages %}
+            <div class="mb-2 {% if m.sender_id == user.id %}text-end{% endif %}">
+                <div class="small text-muted">{{ m.sender.username }} • {{ m.created_at|date:"M d, Y H:i" }}</div>
+                <div class="d-inline-block px-2 py-1 rounded" {% if m.sender_id == user.id %}style="background: #d1e7dd;"{% else %}style="background: #e2e3e5;"{% endif %}>
+                    {{ m.content|linebreaksbr }}
+                </div>
+            </div>
+        {% empty %}
+            <div class="text-muted">No messages yet. Say hello!</div>
+        {% endfor %}
+    </div>
+
+    <form id="chat-form" class="d-flex gap-2">
+        <input id="message-input" class="form-control" type="text" placeholder="Type a message..." autocomplete="off" />
+        <button class="btn btn-primary" type="submit">Send</button>
+    </form>
+</div>
+
+<script>
+    (function() {
+        const conversationId = "{{ conversation.id }}";
+        const messagesEl = document.getElementById('messages');
+        const inputEl = document.getElementById('message-input');
+        const formEl = document.getElementById('chat-form');
+
+        function scrollToBottom() {
+            messagesEl.scrollTop = messagesEl.scrollHeight;
+        }
+
+        const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+        const socketUrl = protocol + '://' + window.location.host + '/ws/chat/' + conversationId + '/';
+        const chatSocket = new WebSocket(socketUrl);
+
+        chatSocket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            const wrapper = document.createElement('div');
+            wrapper.className = 'mb-2' + (data.sender_id === parseInt("{{ user.id }}") ? ' text-end' : '');
+            const meta = document.createElement('div');
+            meta.className = 'small text-muted';
+            meta.textContent = data.sender_username + ' • just now';
+            const bubble = document.createElement('div');
+            bubble.className = 'd-inline-block px-2 py-1 rounded';
+            bubble.style.background = (data.sender_id === parseInt("{{ user.id }}")) ? '#d1e7dd' : '#e2e3e5';
+            bubble.textContent = data.message;
+            wrapper.appendChild(meta);
+            wrapper.appendChild(bubble);
+            messagesEl.appendChild(wrapper);
+            scrollToBottom();
+        };
+
+        chatSocket.onopen = scrollToBottom;
+
+        formEl.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const message = inputEl.value.trim();
+            if (!message) return;
+            chatSocket.send(JSON.stringify({message}));
+            inputEl.value = '';
+        });
+    })();
+</script>
+<h2>Conversation about: <a href="{{ conversation.item.get_absolute_url }}">{{ conversation.item.title }}</a></h2>
+<div id="chat-window" style="max-height:60vh; overflow:auto; border:1px solid #ddd; padding:12px;">
+  {% for msg in messages %}
+    <div class="message" data-id="{{ msg.id }}">
+      <strong>{% if msg.sender == request.user %}You{% else %}{{ msg.sender.username }}{% endif %}</strong>:
+      <span class="content">{{ msg.content }}</span>
+      <div class="timestamp">{{ msg.created_at }}</div>
+    </div>
+  {% endfor %}
+</div>
+
+<form id="chat-form" onsubmit="return false;">
+  {% csrf_token %}
+  <textarea id="message-input" rows="2" style="width:100%"></textarea>
+  <button id="send-btn" class="btn" type="button">Send</button>
+</form>
+
+<script>
+(function(){
+  const conversationId = "{{ conversation.pk }}";
+  const userId = "{{ request.user.id }}";
+  const wsScheme = window.location.protocol === "https:" ? "wss" : "ws";
+  const wsPath = wsScheme + "://" + window.location.host + "/ws/chat/" + conversationId + "/";
+
+  const chatSocket = new WebSocket(wsPath);
+
+  const chatWindow = document.getElementById("chat-window");
+  const input = document.getElementById("message-input");
+  const sendBtn = document.getElementById("send-btn");
+
+  chatSocket.onopen = function() {
+    // connected
+  };
+  chatSocket.onmessage = function(e) {
+    const data = JSON.parse(e.data);
+    // append message
+    const div = document.createElement("div");
+    div.className = "message";
+    div.dataset.id = data.id;
+    div.innerHTML = "<strong>" + (data.sender_id == userId ? "You" : data.sender_username) + "</strong>: " +
+                    "<span class='content'></span>" +
+                    "<div class='timestamp'>" + new Date(data.created_at).toLocaleString() + "</div>";
+    div.querySelector(".content").textContent = data.message;
+    chatWindow.appendChild(div);
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+  };
+  chatSocket.onclose = function() {
+    // handle close if needed
+  };
+
+  sendBtn.addEventListener("click", function(){
+    const msg = input.value.trim();
+    if(!msg) return;
+    chatSocket.send(JSON.stringify({ "message": msg }));
+    input.value = "";
+  });
+
+  // press Enter to send (Shift+Enter for newline)
+  input.addEventListener("keydown", function(e){
+    if(e.key === "Enter" && !e.shiftKey){
+      e.preventDefault();
+      sendBtn.click();
+    }
+  });
+
+  // initial scroll to bottom
+  chatWindow.scrollTop = chatWindow.scrollHeight;
+})();
+</script>
+{% endblock %}
