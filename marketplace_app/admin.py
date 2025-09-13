@@ -1,7 +1,7 @@
 
 
 from django.contrib import admin
-from .models import Item, Conversation, Message
+from .models import Item, Conversation, Message, ItemImage
 
 # Register your models here.
 @admin.register(Item)
@@ -31,3 +31,11 @@ class MessageAdmin(admin.ModelAdmin):
     def short_content(self, obj):
         return (obj.content[:60] + '…') if len(obj.content) > 60 else obj.content
     short_content.short_description = 'content'
+
+
+@admin.register(ItemImage)
+class ItemImageAdmin(admin.ModelAdmin):
+    list_display = ['id', 'item', 'image']
+    list_filter = ['item__category', 'item__posted_on']
+    search_fields = ['item__title']
+    ordering = ['-id']
