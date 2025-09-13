@@ -17,6 +17,8 @@ from .views import (
     InboxView,
     ConversationDetailView,
     StartConversationView,
+    AddItemImageView,
+    DeleteItemImageView,
 )
 
 urlpatterns = [
@@ -32,6 +34,10 @@ urlpatterns = [
     path('item/<int:pk>/', ItemDetailView.as_view(), name='item_detail'),
     path('item/<int:pk>/edit/', ItemUpdateView.as_view(), name='item_edit'),
     path('item/<int:pk>/delete/', ItemDeleteView.as_view(), name='item_delete'),
+    
+    # Item Images
+    path('item/<int:item_pk>/add-image/', AddItemImageView.as_view(), name='add_item_image'),
+    path('image/<int:pk>/delete/', DeleteItemImageView.as_view(), name='delete_item_image'),
 
     # Profiles (specific routes BEFORE dynamic username)
     path('profile/edit/', EditProfileView.as_view(), name='edit_profile'),
