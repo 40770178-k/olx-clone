@@ -148,7 +148,7 @@ class EditProfileView(UpdateView):
         return self.request.user.profile
 
     def get_success_url(self):
-        return reverse_lazy('profile', kwargs={'username': self.request.user.username})
+        return reverse_lazy('user_profile', kwargs={'username': self.request.user.username})
     
 class AddFavoriteView(LoginRequiredMixin, CreateView):
     model = Favorite
