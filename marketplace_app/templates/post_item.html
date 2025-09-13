@@ -28,6 +28,12 @@
         <p>
           {{ form.image.label_tag }}<br>
           {{ form.image }}
+          <small class="form-text text-muted">Main image for your item (recommended)</small>
+        </p>
+        <p>
+          {{ form.extra_images.label_tag }}<br>
+          <input type="file" name="extra_images" id="id_extra_images" accept="image/*" multiple>
+          <small class="form-text text-muted">{{ form.extra_images.help_text }}</small>
         </p>
         <button type="submit" class="btn btn-primary">Publish</button>
       </form>
