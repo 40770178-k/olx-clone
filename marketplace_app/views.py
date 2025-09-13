@@ -2,8 +2,8 @@ from django.views.generic import ListView, FormView, DetailView, TemplateView
 from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib.auth import login
 from django.urls import reverse_lazy
-from .forms import ItemForm, UserRegistrationForm, ProfileForm
-from .models import Item, Profile, Favorite, Conversation, Message
+from .forms import ItemForm, UserRegistrationForm, ProfileForm, ItemImageForm
+from .models import Item, Profile, Favorite, Conversation, Message, ItemImage
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.shortcuts import get_object_or_404, redirect, render
@@ -39,27 +39,37 @@ class ItemCreateView(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         form.instance.posted_by = self.request.user
-        return super().form_valid(form)
+        response = super().form_valid(form)
+        
+        # Handle multiple image uploads
+        extra_images = self.request.FILES.getlist('extra_images')
+        for image in extra_images:
+            ItemImage.objects.create(item=self.object, image=image)
+        
+        return response
     
 class ItemDetailView(DetailView):
-        model = Item
-        template_name = 'item_detail.html'
-        context_object_name = 'item'
+    model = Item
+    template_name = 'item_detail.html'
+    context_object_name = 'item'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.user.is_authenticated:
+            context['is_favorited'] = Favorite.objects.filter(
+                user=self.request.user, 
+                item=self.object
+            ).exists()
+        else:
+            context['is_favorited'] = False
+        if self.request.user.is_authenticated and self.request.user != self.object.posted_by:
+            convo = Conversation.objects.filter(item=self.object, buyer=self.request.user, seller=self.object.posted_by).first()
+            if convo:
+                context['conversation_id'] = convo.id
         
-        def get_context_data(self, **kwargs):
-            context = super().get_context_data(**kwargs)
-            if self.request.user.is_authenticated:
-                context['is_favorited'] = Favorite.objects.filter(
-                    user=self.request.user, 
-                    item=self.object
-                ).exists()
-            else:
-                context['is_favorited'] = False
-            if self.request.user.is_authenticated and self.request.user != self.object.posted_by:
-                convo = Conversation.objects.filter(item=self.object, buyer=self.request.user, seller=self.object.posted_by).first()
-                if convo:
-                    context['conversation_id'] = convo.id
-            return context
+        # Add extra images to context
+        context['extra_images'] = self.object.images.all()
+        return context
 
 class ItemListView(ListView):
     model = Item
@@ -119,7 +129,7 @@ class UserprofileView(ListView):
         context['profile_user'] = get_object_or_404(User, username=username)
         return context
     
-class ItemUpdateView(UserPassesTestMixin, UpdateView):
+class ItemUpdateView(LoginRequiredMixin,UserPassesTestMixin, UpdateView):
     model = Item
     fields = ['title', 'description', 'price', 'location', 'image']
     template_name = 'item_edit.html'
@@ -219,3 +229,33 @@ class StartConversationView(LoginRequiredMixin, TemplateView):
             return redirect("item_detail", pk=item.pk)
         conv, created = Conversation.objects.get_or_create(item=item, buyer=buyer, seller=seller)
         return redirect("conversation-detail", pk=conv.pk)
+
+
+class AddItemImageView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
+    model = ItemImage
+    form_class = ItemImageForm
+    template_name = 'add_image.html'
+
+    def form_valid(self, form):
+        item = get_object_or_404(Item, pk=self.kwargs['item_pk'])
+        form.instance.item = item
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse_lazy('item_detail', kwargs={'pk': self.kwargs['item_pk']})
+
+    def test_func(self):
+        item = get_object_or_404(Item, pk=self.kwargs['item_pk'])
+        return item.posted_by == self.request.user
+
+
+class DeleteItemImageView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = ItemImage
+    template_name = 'delete_image.html'
+
+    def get_success_url(self):
+        return reverse_lazy('item_detail', kwargs={'pk': self.object.item.pk})
+
+    def test_func(self):
+        return self.get_object().item.posted_by == self.request.user
+    
