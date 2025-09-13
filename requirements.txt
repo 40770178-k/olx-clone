@@ -1,0 +1,5 @@
+django==5.2.5
+channels==4.1.0
+channels-redis==4.2.0
+pillow==11.3.0
+
