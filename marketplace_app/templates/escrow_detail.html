@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% block title %}Escrow #{{ escrow.id }} - {{ escrow.item.title }}{% endblock %}
+{% block content %}
+<div class="container py-3">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'escrow-list' %}">Escrow</a></li>
+            <li class="breadcrumb-item active">#{{ escrow.id }}</li>
+        </ol>
+    </nav>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                <h2 class="h4 mb-0">{{ escrow.item.title }}</h2>
+                <span class="badge {% if escrow.status == 'completed' %}bg-success{% elif escrow.status == 'funded' or escrow.status == 'shipped' %}bg-primary{% elif escrow.status == 'refunded' or escrow.status == 'disputed' %}bg-danger{% else %}bg-secondary{% endif %}">
+                    {{ escrow.get_status_display }}
+                </span>
+            </div>
+
+            <p class="text-muted mb-2">${{ escrow.amount }}</p>
+            <p class="small text-muted mb-0">
+                Buyer: {{ escrow.buyer.username }} • Seller: {{ escrow.seller.username }}
+            </p>
+            <p class="small text-muted mb-0">Created {{ escrow.created_at|date:"M d, Y H:i" }}</p>
+            {% if escrow.funded_at %}
+                <p class="small text-muted mb-0">Funded {{ escrow.funded_at|date:"M d, Y H:i" }}</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">Actions</h5>
+
+            {% if escrow.status == 'pending' %}
+                {% if user == escrow.buyer %}
+                    <a href="{% url 'escrow-checkout' escrow.pk %}" class="btn btn-primary">
+                        <i class="bi bi-credit-card"></i> Pay with Escrow
+                    </a>
+                {% else %}
+                    <p class="text-muted">Waiting for buyer to pay.</p>
+                {% endif %}
+            {% endif %}
+
+            {% if escrow.status == 'funded' %}
+                {% if user == escrow.seller %}
+                    <form method="post" action="{% url 'escrow-mark-shipped' escrow.pk %}" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-box-seam"></i> Mark as Shipped
+                        </button>
+                    </form>
+                {% endif %}
+                {% if user == escrow.buyer %}
+                    <form method="post" action="{% url 'escrow-confirm-receipt' escrow.pk %}" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-check-circle"></i> I Received It - Release Payment
+                        </button>
+                    </form>
+                    <form method="post" action="{% url 'escrow-dispute' escrow.pk %}" class="d-inline" onsubmit="return confirm('Open a dispute? Payment will be cancelled and you will be refunded.');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                            <i class="bi bi-exclamation-triangle"></i> Dispute / Refund
+                        </button>
+                    </form>
+                {% endif %}
+            {% endif %}
+
+            {% if escrow.status == 'shipped' %}
+                {% if user == escrow.buyer %}
+                    <form method="post" action="{% url 'escrow-confirm-receipt' escrow.pk %}" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-check-circle"></i> I Received It - Release Payment
+                        </button>
+                    </form>
+                    <form method="post" action="{% url 'escrow-dispute' escrow.pk %}" class="d-inline" onsubmit="return confirm('Open a dispute? Payment will be cancelled and you will be refunded.');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                            <i class="bi bi-exclamation-triangle"></i> Dispute / Refund
+                        </button>
+                    </form>
+                {% endif %}
+            {% endif %}
+
+            {% if escrow.status == 'completed' %}
+                <p class="text-success mb-0"><i class="bi bi-check-circle"></i> Transaction complete. Funds released to seller.</p>
+            {% endif %}
+
+            {% if escrow.status == 'refunded' %}
+                <p class="text-muted mb-0">Payment was cancelled. You will be refunded.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if escrow.conversation %}
+        <a href="{% url 'conversation-detail' escrow.conversation.pk %}" class="btn btn-outline-primary mt-3">
+            <i class="bi bi-chat-dots"></i> Open Conversation
+        </a>
+    {% endif %}
+    <a href="{% url 'item_detail' escrow.item.pk %}" class="btn btn-outline-secondary mt-3">View Item</a>
+</div>
+{% endblock %}

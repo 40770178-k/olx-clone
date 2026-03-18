@@ -1,0 +1,26 @@
+{{ ... }}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messages</title>
+</head>
+<body>
+    <h1>Your Messages</h1>
+    <ul>
+        {% for message in messages %}
+            <li>
+                <strong>{{ message.sender.username }}:</strong> {{ message.content }} <br>
+                <small>{{ message.created_at|date:"Y-m-d H:i" }}</small>
+            </li>
+        {% endfor %}
+    </ul>
+    <form method="post" action="{% url 'send_message' conversation.id %}">
+        {% csrf_token %}
+        <textarea name="content" required></textarea><br>
+        <button type="submit">Send</button>
+    </form>
+</body>
+</html>
+{{ ... }}

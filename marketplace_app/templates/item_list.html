@@ -4,7 +4,6 @@
 
 <h2 class="mb-4">Browse Items</h2>
 
-<!-- 🔍 Search & Filter Form -->
 <form method="get" class="filter-form mb-4">
     <input type="text" name="q" placeholder="Search..." value="{{ request.GET.q }}">
     
@@ -23,7 +22,6 @@
     <button type="submit">Apply</button>
 </form>
 
-<!-- 🛒 Items Grid -->
 {% if object_list %}
     <div class="row g-4">
         {% for item in object_list %}

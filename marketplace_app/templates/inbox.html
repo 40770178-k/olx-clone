@@ -9,32 +9,19 @@
         <li class="list-group-item d-flex justify-content-between align-items-center">
           <div>
             <div><strong>{{ c.item.title }}</strong></div>
-            <div class="small text-muted">With {% if user.id == c.buyer_id %}{{ c.seller.username }}{% else %}{{ c.buyer.username }}{% endif %}</div>
+            <div class="small text-muted">
+              With {% if user.id == c.buyer_id %}{{ c.seller.username }}{% else %}{{ c.buyer.username }}{% endif %}
+              {% if c.last_message_at %}
+                <span class="ms-1">• Last message {{ c.last_message_at|timesince }} ago</span>
+              {% endif %}
+            </div>
           </div>
-          <a class="btn btn-sm btn-outline-primary" href="{% url 'conversation-detail' c.id %}">Open</a>
+          <a class="btn btn-sm btn-outline-primary" href="{% url 'conversation-detail' c.id %}">Open Chat</a>
         </li>
       {% endfor %}
     </ul>
   {% else %}
-    <div class="text-muted">No conversations yet.</div>
+    <div class="text-muted">No conversations yet. <a href="{% url 'item_list' %}">Browse items</a> and message a seller to start.</div>
   {% endif %}
 </div>
-{% endblock %}
-
-{% extends "base.html" %}
-{% block content %}
-<h1>Inbox</h1>
-<ul class="conversation-list">
-  {% for conv in conversations %}
-    <li>
-      <a href="{% url 'conversation-detail' conv.pk %}">
-        {{ conv.item.title }} —
-        {% if request.user == conv.buyer %} Seller: {{ conv.seller.username }} {% else %} Buyer: {{ conv.buyer.username }} {% endif %}
-        <small>{{ conv.last_message_at|default:conv.created_at }}</small>
-      </a>
-    </li>
-  {% empty %}
-    <li>No conversations yet.</li>
-  {% endfor %}
-</ul>
 {% endblock %}

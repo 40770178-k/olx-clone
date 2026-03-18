@@ -19,7 +19,7 @@ class Item(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     location = models.CharField(max_length=100, default='Not specified')
 
-    # ✅ Main image
+    # Main image
     image = models.ImageField(upload_to='images/', blank=True, null=True)
 
     posted_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="posted_items")
@@ -29,7 +29,7 @@ class Item(models.Model):
         return self.title
 
 
-# ✅ Extra gallery images
+# Extra gallery images
 class ItemImage(models.Model):
     item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name="images")
     image = models.ImageField(upload_to="item_images/")
@@ -83,8 +83,41 @@ class Message(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     read = models.BooleanField(default=False)
 
+    def __str__(self):
+        return f'Message from {self.sender.username} in conversation {self.conversation.id}'
+
+
+class Escrow(models.Model):
+    """Escrow transaction - funds held until buyer confirms receipt."""
+    STATUS_CHOICES = (
+        ('pending', 'Pending Payment'),
+        ('funded', 'Funded (Held)'),
+        ('shipped', 'Shipped'),
+        ('completed', 'Completed'),
+        ('disputed', 'Disputed'),
+        ('refunded', 'Refunded'),
+        ('cancelled', 'Cancelled'),
+    )
+
+    item = models.ForeignKey("Item", on_delete=models.CASCADE, related_name="escrows")
+    conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE, related_name="escrows", null=True, blank=True)
+    buyer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="escrows_as_buyer")
+    seller = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="escrows_as_seller")
+
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+
+    stripe_payment_intent_id = models.CharField(max_length=255, blank=True)
+    stripe_checkout_session_id = models.CharField(max_length=255, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    funded_at = models.DateTimeField(null=True, blank=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+
+    notes = models.TextField(blank=True)
+
     class Meta:
-        ordering = ["created_at"]
+        ordering = ['-created_at']
 
     def __str__(self):
-        return f"Msg(conv={self.conversation_id}, sender={self.sender_id}, at={self.created_at})"
+        return f'Escrow #{self.id}: {self.item.title} - {self.get_status_display()}'

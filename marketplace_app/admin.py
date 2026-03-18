@@ -1,7 +1,7 @@
 
 
 from django.contrib import admin
-from .models import Item, Conversation, Message, ItemImage
+from .models import Item, Conversation, Message, ItemImage, Escrow
 
 # Register your models here.
 @admin.register(Item)
@@ -39,3 +39,11 @@ class ItemImageAdmin(admin.ModelAdmin):
     list_filter = ['item__category', 'item__posted_on']
     search_fields = ['item__title']
     ordering = ['-id']
+
+
+@admin.register(Escrow)
+class EscrowAdmin(admin.ModelAdmin):
+    list_display = ['id', 'item', 'buyer', 'seller', 'amount', 'status', 'created_at']
+    list_filter = ['status', 'created_at']
+    search_fields = ['item__title', 'buyer__username', 'seller__username']
+    ordering = ['-created_at']

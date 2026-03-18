@@ -5,7 +5,6 @@
     <div class="col-md-8">
         <h2>Edit Item</h2>
         
-        <!-- Current Images -->
         {% if object.image or object.images.all %}
             <div class="mb-4">
                 <h5>Current Images:</h5>
@@ -41,7 +40,6 @@
             </div>
         {% endif %}
         
-        <!-- Edit Form -->
         <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="mb-3">

@@ -10,7 +10,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-xj=bo+a(j1flj7sk=1!6c$uoo%yx3nje_a@+94gvsog)b=$yfz'
 
 DEBUG = True
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '*']
 
 # Application definition
 INSTALLED_APPS = [
@@ -98,3 +98,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Login redirects
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'home'
+
+# Stripe (escrow payments) - set in env: STRIPE_SECRET_KEY, STRIPE_PUBLISHABLE_KEY, STRIPE_WEBHOOK_SECRET
+STRIPE_SECRET_KEY = os.environ.get('STRIPE_SECRET_KEY', '')
+STRIPE_PUBLISHABLE_KEY = os.environ.get('STRIPE_PUBLISHABLE_KEY', '')
+STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET', '')
