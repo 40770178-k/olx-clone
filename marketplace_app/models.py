@@ -25,6 +25,9 @@ class Item(models.Model):
     posted_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="posted_items")
     posted_on = models.DateTimeField(auto_now_add=True)
 
+    # Add is_shipped field to track shipment status
+    is_shipped = models.BooleanField(default=False)
+
     def __str__(self):
         return self.title
 
@@ -121,3 +124,15 @@ class Escrow(models.Model):
 
     def __str__(self):
         return f'Escrow #{self.id}: {self.item.title} - {self.get_status_display()}'
+
+
+class Complaint(models.Model):
+    item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name='complaints')
+    buyer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='complaints')
+    proof_video = models.FileField(upload_to='complaint_proofs/', blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    is_resolved = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f'Complaint for {self.item.title} by {self.buyer.username}'

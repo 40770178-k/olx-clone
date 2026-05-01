@@ -1,7 +1,5 @@
-
-
 from django.contrib import admin
-from .models import Item, Conversation, Message, ItemImage, Escrow
+from .models import Item, Conversation, Message, ItemImage, Escrow, Complaint
 
 # Register your models here.
 @admin.register(Item)
@@ -47,3 +45,35 @@ class EscrowAdmin(admin.ModelAdmin):
     list_filter = ['status', 'created_at']
     search_fields = ['item__title', 'buyer__username', 'seller__username']
     ordering = ['-created_at']
+    actions = ['approve_escrow', 'reject_escrow','funded_escrow', 'disputed_escrow', 'cancelled_escrow']
+
+    def approve_escrow(self, request, queryset):
+        queryset.update(status='approved')
+
+    def reject_escrow(self, request, queryset):
+        queryset.update(status='rejected')
+
+    def funded_escrow(self, request, queryset):
+        queryset.update(status='funded')
+
+    def disputed_escrow(self, request, queryset):
+        queryset.update(status='disputed')
+
+    def cancelled_escrow(self, request, queryset):
+        queryset.update(status='cancelled')
+
+@admin.register(Complaint)
+class ComplaintAdmin(admin.ModelAdmin):
+    list_display = ['item', 'buyer', 'created_at', 'is_resolved']
+    list_filter = ['is_resolved', 'created_at']
+    search_fields = ['item__title', 'buyer__username']
+    ordering = ['-created_at']
+
+    def approve_complaint(self, request, queryset):
+        for complaint in queryset:
+            complaint.is_resolved = True
+            complaint.save()
+        self.message_user(request, 'Selected complaints have been approved.')
+    approve_complaint.short_description = 'Approve selected complaints'
+
+    actions = [approve_complaint]

@@ -478,6 +478,23 @@ class ConfirmReceiptView(LoginRequiredMixin, TemplateView):
         return redirect('escrow-detail', pk=escrow.pk)
 
 
+class MarkShippedView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = Item
+    template_name = 'mark_shipped.html'
+    context_object_name = 'item'
+
+    def form_valid(self, form):
+        item = form.save(commit=False)
+        item.is_shipped = True  # Assuming there's a field to track shipment status
+        item.save()
+        django_messages.success(self.request, 'Item marked as shipped.')
+        return redirect('item_list')
+
+    def test_func(self):
+        item = self.get_object()
+        return self.request.user == item.posted_by  # Ensure only the seller can mark it as shipped
+
+
 class MarkShippedView(LoginRequiredMixin, TemplateView):
     """Seller marks item as shipped."""
 

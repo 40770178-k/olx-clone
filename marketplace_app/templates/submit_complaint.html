@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit Complaint</title>
+</head>
+<body>
+    <h1>Submit a Complaint</h1>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <label for="proof_video">Upload Proof Video:</label>
+        <input type="file" name="proof_video" accept="video/*" required>
+        <button type="submit">Submit Complaint</button>
+    </form>
+</body>
+</html>
