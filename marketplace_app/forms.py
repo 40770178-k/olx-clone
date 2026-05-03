@@ -84,3 +84,12 @@ class SellerRatingForm(forms.ModelForm):
             "stars": forms.Select(choices=[(i, f"{i} Star{'s' if i > 1 else ''}") for i in range(1, 6)]),
             "review": forms.Textarea(attrs={"rows": 3, "placeholder": "Optional feedback for the seller"}),
         }
+
+
+class EscrowBankDetailsForm(forms.Form):
+    account_name = forms.CharField(max_length=120)
+    bank_name = forms.CharField(max_length=120)
+    account_number = forms.CharField(max_length=40)
+    branch = forms.CharField(max_length=120)
+    bank_code = forms.CharField(max_length=20)
+    swift_code = forms.CharField(max_length=20, required=False)

@@ -35,7 +35,7 @@
 
             {% if escrow.status == 'pending' %}
                 {% if user == escrow.buyer %}
-                    <a href="{% url 'escrow-checkout' escrow.pk %}" class="btn btn-primary">
+                    <a href="{% url 'escrow-fund' escrow.pk %}" class="btn btn-primary">
                         <i class="bi bi-credit-card"></i> Pay with Escrow
                     </a>
                 {% else %}
@@ -43,7 +43,19 @@
                 {% endif %}
             {% endif %}
 
-            {% if user == escrow.seller %}
+            {% if bank_meta %}
+                <div class="mt-3 p-3 border rounded">
+                    <p class="small mb-1"><strong>Prototype Bank Details (masked)</strong></p>
+                    <p class="small text-muted mb-1">Account Name: {{ bank_meta.account_name }}</p>
+                    <p class="small text-muted mb-1">Bank Name: {{ bank_meta.bank_name }}</p>
+                    <p class="small text-muted mb-1">Account Number: {{ bank_meta.account_number_masked }}</p>
+                    <p class="small text-muted mb-1">Branch: {{ bank_meta.branch }}</p>
+                    <p class="small text-muted mb-1">Bank Code: {{ bank_meta.bank_code }}</p>
+                    <p class="small text-muted mb-0">SWIFT Code: {{ bank_meta.swift_code }}</p>
+                </div>
+            {% endif %}
+
+            {% if user == escrow.seller and escrow.status == 'funded' %}
                 <p class="text-muted">Seller action for this item:</p>
                 <form method="post" action="{% url 'escrow-mark-shipped' escrow.pk %}" class="d-inline">
                     {% csrf_token %}
@@ -54,8 +66,10 @@
             {% endif %}
 
             {% if user == escrow.buyer %}
+            {% if escrow.status == 'funded' or escrow.status == 'shipped' %}
                 <hr>
                 <h6>Upload Delivery Confirmation Photo</h6>
+                <p class="small text-muted mb-2">Upload proof you received the item, then confirm below to release payment to the seller.</p>
                 <form method="post" action="{% url 'escrow-upload-confirmation' escrow.pk %}" enctype="multipart/form-data" class="mb-3">
                     {% csrf_token %}
                     {{ confirmation_form.as_p }}
@@ -63,13 +77,20 @@
                         <i class="bi bi-upload"></i> Upload Picture
                     </button>
                 </form>
-                <form method="post" action="{% url 'escrow-confirm-receipt' escrow.pk %}" class="d-inline">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-success">
+                {% if has_confirmation_photo %}
+                    <form method="post" action="{% url 'escrow-confirm-receipt' escrow.pk %}" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-check-circle"></i> I Received It - Release Payment
+                        </button>
+                    </form>
+                {% else %}
+                    <button type="button" class="btn btn-success" disabled>
                         <i class="bi bi-check-circle"></i> I Received It - Release Payment
                     </button>
-                </form>
-                <form method="post" action="{% url 'escrow-dispute' escrow.pk %}" class="d-inline" onsubmit="return confirm('Open a dispute? Payment will be cancelled and you will be refunded.');">
+                    <p class="small text-muted d-inline-block ms-2 mb-0">Upload a confirmation photo first.</p>
+                {% endif %}
+                <form method="post" action="{% url 'escrow-dispute' escrow.pk %}" class="d-inline ms-2" onsubmit="return confirm('Open a dispute? Payment will be cancelled and you will be refunded.');">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-outline-danger btn-sm">
                         <i class="bi bi-exclamation-triangle"></i> Dispute / Refund
@@ -84,6 +105,10 @@
                         <i class="bi bi-flag"></i> Submit Complaint
                     </button>
                 </form>
+            {% endif %}
+            {% endif %}
+
+            {% if user == escrow.buyer and escrow.status == 'completed' %}
                 <hr>
                 <h6>Rate Seller</h6>
                 <form method="post" action="{% url 'escrow-rate-seller' escrow.pk %}">

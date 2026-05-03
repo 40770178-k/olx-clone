@@ -12,6 +12,7 @@ from .forms import (
     DeliveryConfirmationImageForm,
     ComplaintForm,
     SellerRatingForm,
+    EscrowBankDetailsForm,
 )
 from .models import (
     Item,
@@ -31,6 +32,10 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.http import JsonResponse
 from django.contrib.auth.models import User
 from django.db.models import Q
+from django.conf import settings
+import base64
+import hashlib
+import json
 from .escrow_services import (
     is_stripe_configured,
     create_escrow_checkout_session,
@@ -101,7 +106,8 @@ class ItemDetailView(DetailView):
         if self.request.user.is_authenticated and self.request.user == self.object.posted_by:
             context['seller_latest_escrow'] = Escrow.objects.filter(
                 item=self.object,
-                seller=self.request.user
+                seller=self.request.user,
+                status='funded'
             ).order_by('-created_at').first()
         return context
 
@@ -173,6 +179,15 @@ class ItemUpdateView(LoginRequiredMixin,UserPassesTestMixin, UpdateView):
 
     def test_func(self):
         return self.get_object().posted_by == self.request.user
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['seller_latest_funded_escrow'] = Escrow.objects.filter(
+            item=self.object,
+            seller=self.request.user,
+            status='funded'
+        ).order_by('-created_at').first()
+        return ctx
 
 
 class ItemDeleteView(UserPassesTestMixin, DeleteView):
@@ -374,16 +389,25 @@ class EscrowDetailView(LoginRequiredMixin, DetailView):
         existing_rating = SellerRating.objects.filter(escrow=escrow, buyer=user).first()
         ctx['rating_form'] = SellerRatingForm(instance=existing_rating)
         ctx['existing_rating'] = existing_rating
+        bank_meta = None
+        if escrow.notes:
+            try:
+                notes_data = json.loads(escrow.notes)
+                bank_meta = notes_data.get("bank_meta")
+            except (TypeError, json.JSONDecodeError):
+                bank_meta = None
+        ctx['bank_meta'] = bank_meta
+        ctx['has_confirmation_photo'] = escrow.confirmation_images.exists()
         return ctx
 
 
 def _create_and_redirect_escrow(request, item, buyer, seller, conversation=None):
-    """Shared logic for creating escrow and redirecting to Stripe."""
+    """Shared logic for creating escrow and redirecting to prototype funding flow."""
     existing = Escrow.objects.filter(
         item=item, buyer=buyer, seller=seller, status='pending'
     ).first()
     if existing:
-        return redirect('escrow-checkout', pk=existing.pk)
+        return redirect('escrow-fund', pk=existing.pk)
 
     escrow = Escrow.objects.create(
         item=item,
@@ -394,22 +418,63 @@ def _create_and_redirect_escrow(request, item, buyer, seller, conversation=None)
         status='pending',
     )
 
-    if not is_stripe_configured():
-        django_messages.warning(
-            request,
-            "Stripe is not configured. Set STRIPE_SECRET_KEY and STRIPE_PUBLISHABLE_KEY. "
-            "Escrow created in demo mode."
-        )
-        return redirect('escrow-detail', pk=escrow.pk)
+    django_messages.info(request, "Prototype mode: enter bank details to simulate funding.")
+    return redirect('escrow-fund', pk=escrow.pk)
 
-    session, err = create_escrow_checkout_session(escrow, request)
-    if err:
-        django_messages.error(request, f"Payment error: {err}")
-        return redirect('escrow-detail', pk=escrow.pk)
 
-    escrow.stripe_checkout_session_id = session.id
-    escrow.save()
-    return redirect(session.url)
+def _obfuscate_text(value):
+    """Prototype-only obfuscation to avoid storing bank details in plain text."""
+    value_bytes = value.encode("utf-8")
+    key_bytes = hashlib.sha256(settings.SECRET_KEY.encode("utf-8")).digest()
+    xored = bytes(b ^ key_bytes[i % len(key_bytes)] for i, b in enumerate(value_bytes))
+    return base64.urlsafe_b64encode(xored).decode("ascii")
+
+
+class EscrowPrototypeFundView(LoginRequiredMixin, TemplateView):
+    template_name = 'escrow_fund.html'
+
+    def get(self, request, *args, **kwargs):
+        escrow = get_object_or_404(Escrow, pk=kwargs['pk'])
+        if escrow.buyer != request.user:
+            django_messages.error(request, "Not authorized.")
+            return redirect('escrow-list')
+        if escrow.status != 'pending':
+            return redirect('escrow-detail', pk=escrow.pk)
+        return render(request, self.template_name, {'escrow': escrow, 'form': EscrowBankDetailsForm()})
+
+    def post(self, request, *args, **kwargs):
+        escrow = get_object_or_404(Escrow, pk=kwargs['pk'])
+        if escrow.buyer != request.user:
+            django_messages.error(request, "Not authorized.")
+            return redirect('escrow-list')
+        if escrow.status != 'pending':
+            return redirect('escrow-detail', pk=escrow.pk)
+
+        form = EscrowBankDetailsForm(request.POST)
+        if not form.is_valid():
+            django_messages.error(request, "Please provide valid bank details.")
+            return render(request, self.template_name, {'escrow': escrow, 'form': form})
+
+        details = form.cleaned_data
+        encrypted_payload = {key: _obfuscate_text(str(val)) for key, val in details.items()}
+
+        account_number = details.get('account_number', '')
+        masked_account = f"{'*' * max(0, len(account_number) - 4)}{account_number[-4:]}" if account_number else '****'
+        bank_meta = {
+            'account_name': details.get('account_name'),
+            'bank_name': details.get('bank_name'),
+            'account_number_masked': masked_account,
+            'branch': details.get('branch'),
+            'bank_code': details.get('bank_code'),
+            'swift_code': details.get('swift_code') or 'N/A',
+        }
+        escrow.notes = json.dumps({'bank_encrypted': encrypted_payload, 'bank_meta': bank_meta, 'mode': 'prototype'})
+        escrow.status = 'funded'
+        escrow.funded_at = timezone.now()
+        escrow.save(update_fields=['notes', 'status', 'funded_at'])
+
+        django_messages.success(request, "Prototype escrow funded. No real money was moved.")
+        return redirect('escrow-detail', pk=escrow.pk)
 
 
 class InitiateEscrowFromItemView(LoginRequiredMixin, TemplateView):
@@ -498,6 +563,13 @@ class ConfirmReceiptView(LoginRequiredMixin, TemplateView):
             django_messages.error(request, "Cannot confirm receipt in current state.")
             return redirect('escrow-detail', pk=escrow.pk)
 
+        if not escrow.confirmation_images.exists():
+            django_messages.error(
+                request,
+                "Upload at least one delivery confirmation photo before confirming receipt and releasing payment."
+            )
+            return redirect('escrow-detail', pk=escrow.pk)
+
         success, err = capture_escrow_payment(escrow)
         if success:
             escrow.status = 'completed'
@@ -510,23 +582,6 @@ class ConfirmReceiptView(LoginRequiredMixin, TemplateView):
         return redirect('escrow-detail', pk=escrow.pk)
 
 
-class MarkShippedView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
-    model = Item
-    template_name = 'mark_shipped.html'
-    context_object_name = 'item'
-
-    def form_valid(self, form):
-        item = form.save(commit=False)
-        item.is_shipped = True  # Assuming there's a field to track shipment status
-        item.save()
-        django_messages.success(self.request, 'Item marked as shipped.')
-        return redirect('item_list')
-
-    def test_func(self):
-        item = self.get_object()
-        return self.request.user == item.posted_by  # Ensure only the seller can mark it as shipped
-
-
 class MarkShippedView(LoginRequiredMixin, TemplateView):
     """Seller marks item as shipped."""
 
@@ -535,6 +590,9 @@ class MarkShippedView(LoginRequiredMixin, TemplateView):
         if escrow.seller != request.user:
             django_messages.error(request, "Not authorized.")
             return redirect('escrow-list')
+        if escrow.status != 'funded':
+            django_messages.error(request, "Ship action is available only after escrow is funded.")
+            return redirect('escrow-detail', pk=escrow.pk)
         escrow.status = 'shipped'
         escrow.save()
         django_messages.success(request, "Marked as shipped. Buyer can confirm receipt when they receive it.")

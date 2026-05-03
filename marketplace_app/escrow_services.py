@@ -2,6 +2,7 @@
 Escrow payment service using Stripe.
 Uses PaymentIntent with manual capture: authorize on payment, capture when buyer confirms receipt.
 """
+import json
 import stripe
 from django.conf import settings
 from django.urls import reverse
@@ -66,12 +67,25 @@ def create_escrow_checkout_session(escrow, request):
         return None, str(e)
 
 
+def _is_prototype_escrow(escrow):
+    """Bank-details prototype funding (no real Stripe PaymentIntent)."""
+    if not escrow.notes:
+        return False
+    try:
+        data = json.loads(escrow.notes)
+        return isinstance(data, dict) and data.get("mode") == "prototype"
+    except (TypeError, ValueError, json.JSONDecodeError):
+        return False
+
+
 def capture_escrow_payment(escrow):
     """
     Capture the authorized payment when buyer confirms receipt.
     Releases funds to the platform (seller payout would use Stripe Connect).
     """
     if not escrow.stripe_payment_intent_id:
+        if _is_prototype_escrow(escrow):
+            return True, None
         return False, "No payment intent associated with this escrow."
 
     stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -86,6 +100,8 @@ def capture_escrow_payment(escrow):
 def cancel_escrow_payment(escrow):
     """Cancel the authorization and release the hold (for refunds/disputes)."""
     if not escrow.stripe_payment_intent_id:
+        if _is_prototype_escrow(escrow):
+            return True, None
         return False, "No payment intent associated with this escrow."
 
     stripe.api_key = settings.STRIPE_SECRET_KEY

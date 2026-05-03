@@ -73,6 +73,21 @@
                 <a href="{% url 'item_detail' object.pk %}" class="btn btn-secondary">Cancel</a>
             </div>
         </form>
+
+        <div class="mt-3">
+            {% if seller_latest_funded_escrow %}
+                <form method="post" action="{% url 'escrow-mark-shipped' seller_latest_funded_escrow.pk %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success btn-sm">
+                        <i class="bi bi-truck"></i> Ship Item (Escrow Funded)
+                    </button>
+                </form>
+            {% else %}
+                <button type="button" class="btn btn-success btn-sm" disabled>
+                    <i class="bi bi-truck"></i> Ship Item (Available after escrow is funded)
+                </button>
+            {% endif %}
+        </div>
     </div>
 </div>
 {% endblock %}

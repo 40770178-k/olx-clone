@@ -28,6 +28,7 @@ from .views import (
     InitiateEscrowFromConversationView,
     EscrowCheckoutView,
     EscrowSuccessView,
+    EscrowPrototypeFundView,
     ConfirmReceiptView,
     MarkShippedView,
     EscrowDisputeView,
@@ -74,6 +75,7 @@ urlpatterns = [
     # Escrow payments
     path('escrow/', EscrowListView.as_view(), name='escrow-list'),
     path('escrow/<int:pk>/', EscrowDetailView.as_view(), name='escrow-detail'),
+    path('escrow/<int:pk>/fund/', EscrowPrototypeFundView.as_view(), name='escrow-fund'),
     path('item/<int:item_pk>/escrow/', InitiateEscrowFromItemView.as_view(), name='escrow-initiate-item'),
     path('conversations/<int:conversation_pk>/escrow/', InitiateEscrowFromConversationView.as_view(), name='escrow-initiate-conversation'),
     path('escrow/<int:pk>/checkout/', EscrowCheckoutView.as_view(), name='escrow-checkout'),
