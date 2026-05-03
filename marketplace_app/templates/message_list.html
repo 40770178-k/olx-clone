@@ -1,26 +1,21 @@
-{{ ... }}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Messages</title>
-</head>
-<body>
-    <h1>Your Messages</h1>
-    <ul>
+{% extends 'base.html' %}
+{% block title %}Messages{% endblock %}
+{% block content %}
+<div class="content-card">
+    <h1 class="h4">Your Messages</h1>
+    <ul class="plain-list mt-3">
         {% for message in messages %}
             <li>
-                <strong>{{ message.sender.username }}:</strong> {{ message.content }} <br>
-                <small>{{ message.created_at|date:"Y-m-d H:i" }}</small>
+                <strong>{{ message.sender.username }}:</strong> {{ message.content }}<br>
+                <small class="text-muted">{{ message.created_at|date:"Y-m-d H:i" }}</small>
             </li>
         {% endfor %}
     </ul>
-    <form method="post" action="{% url 'send_message' conversation.id %}">
+
+    <form method="post" action="{% url 'send_message' conversation.id %}" class="mt-3">
         {% csrf_token %}
-        <textarea name="content" required></textarea><br>
-        <button type="submit">Send</button>
+        <textarea name="content" class="form-control mb-2" rows="3" required></textarea>
+        <button type="submit" class="btn btn-primary">Send</button>
     </form>
-</body>
-</html>
-{{ ... }}
+</div>
+{% endblock %}

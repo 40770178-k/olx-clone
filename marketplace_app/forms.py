@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from .models import Item, ItemImage
+from .models import Item, ItemImage, DeliveryConfirmationImage, Complaint, SellerRating
 from django import forms
 from .models import Profile
 
@@ -53,4 +53,34 @@ class ProfileForm(forms.ModelForm):
         fields = ['bio', 'location', 'profile_picture']
         widgets = {
             'bio': forms.Textarea(attrs={'rows': 4}),
+        }
+
+
+class DeliveryConfirmationImageForm(forms.ModelForm):
+    class Meta:
+        model = DeliveryConfirmationImage
+        fields = ["image"]
+        widgets = {
+            "image": forms.FileInput(attrs={"accept": "image/*"})
+        }
+
+
+class ComplaintForm(forms.ModelForm):
+    class Meta:
+        model = Complaint
+        fields = ["details", "proof_image", "proof_video"]
+        widgets = {
+            "details": forms.Textarea(attrs={"rows": 3, "placeholder": "Describe the issue clearly..."}),
+            "proof_image": forms.FileInput(attrs={"accept": "image/*"}),
+            "proof_video": forms.FileInput(attrs={"accept": "video/*"}),
+        }
+
+
+class SellerRatingForm(forms.ModelForm):
+    class Meta:
+        model = SellerRating
+        fields = ["stars", "review"]
+        widgets = {
+            "stars": forms.Select(choices=[(i, f"{i} Star{'s' if i > 1 else ''}") for i in range(1, 6)]),
+            "review": forms.Textarea(attrs={"rows": 3, "placeholder": "Optional feedback for the seller"}),
         }

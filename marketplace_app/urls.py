@@ -31,6 +31,9 @@ from .views import (
     ConfirmReceiptView,
     MarkShippedView,
     EscrowDisputeView,
+    UploadDeliveryConfirmationView,
+    SubmitEscrowComplaintView,
+    RateSellerView,
 )
 
 urlpatterns = [
@@ -78,4 +81,7 @@ urlpatterns = [
     path('escrow/<int:pk>/confirm-receipt/', ConfirmReceiptView.as_view(), name='escrow-confirm-receipt'),
     path('escrow/<int:pk>/mark-shipped/', MarkShippedView.as_view(), name='escrow-mark-shipped'),
     path('escrow/<int:pk>/dispute/', EscrowDisputeView.as_view(), name='escrow-dispute'),
+    path('escrow/<int:pk>/upload-confirmation/', UploadDeliveryConfirmationView.as_view(), name='escrow-upload-confirmation'),
+    path('escrow/<int:pk>/complaint/', SubmitEscrowComplaintView.as_view(), name='escrow-submit-complaint'),
+    path('escrow/<int:pk>/rate-seller/', RateSellerView.as_view(), name='escrow-rate-seller'),
 ]

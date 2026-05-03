@@ -14,7 +14,7 @@
                         <span class="badge bg-secondary ms-2">{{ e.get_status_display }}</span>
                         <div class="small text-muted mt-1">
                             {% if user == e.buyer %}You → {{ e.seller.username }}{% else %}{{ e.buyer.username }} → You{% endif %}
-                            • ${{ e.amount }}
+                            • KSh {{ e.amount }}
                         </div>
                     </div>
                     <span class="text-muted small">{{ e.created_at|date:"M d, Y" }}</span>

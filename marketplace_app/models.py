@@ -128,11 +128,50 @@ class Escrow(models.Model):
 
 class Complaint(models.Model):
     item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name='complaints')
+    escrow = models.ForeignKey("Escrow", on_delete=models.CASCADE, related_name='complaints', null=True, blank=True)
     buyer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='complaints')
+    details = models.TextField(blank=True)
     proof_video = models.FileField(upload_to='complaint_proofs/', blank=True, null=True)
+    proof_image = models.ImageField(upload_to='complaint_images/', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_resolved = models.BooleanField(default=False)
 
     def __str__(self):
         return f'Complaint for {self.item.title} by {self.buyer.username}'
+
+
+class DeliveryConfirmationImage(models.Model):
+    escrow = models.ForeignKey("Escrow", on_delete=models.CASCADE, related_name="confirmation_images")
+    buyer = models.ForeignKey(User, on_delete=models.CASCADE, related_name="delivery_confirmation_images")
+    image = models.ImageField(upload_to="delivery_confirmations/")
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-uploaded_at"]
+
+    def __str__(self):
+        return f"Delivery image for escrow #{self.escrow_id}"
+
+
+class SellerRating(models.Model):
+    escrow = models.OneToOneField("Escrow", on_delete=models.CASCADE, related_name="seller_rating")
+    item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name="seller_ratings")
+    buyer = models.ForeignKey(User, on_delete=models.CASCADE, related_name="submitted_ratings")
+    seller = models.ForeignKey(User, on_delete=models.CASCADE, related_name="received_ratings")
+    stars = models.PositiveSmallIntegerField()
+    review = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(stars__gte=1) & models.Q(stars__lte=5),
+                name="seller_rating_stars_between_1_and_5",
+            )
+        ]
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.stars} stars for {self.seller.username} by {self.buyer.username}"

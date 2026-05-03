@@ -13,7 +13,7 @@
                         <div class="col-3 col-md-2">
                             <div class="position-relative">
                                 <img src="{{ object.image.url }}" alt="{{ object.title }}" 
-                                     class="img-fluid rounded border" style="height: 80px; object-fit: cover;">
+                                     class="img-fluid rounded border img-cover-80">
                                 <span class="badge bg-primary position-absolute top-0 start-0 m-1">Main</span>
                             </div>
                         </div>
@@ -22,7 +22,7 @@
                         <div class="col-3 col-md-2">
                             <div class="position-relative">
                                 <img src="{{ image.image.url }}" alt="{{ object.title }}" 
-                                     class="img-fluid rounded border" style="height: 80px; object-fit: cover;">
+                                     class="img-fluid rounded border img-cover-80">
                                 <a href="{% url 'delete_item_image' image.pk %}" 
                                    class="btn btn-danger btn-sm position-absolute top-0 end-0 m-1"
                                    onclick="return confirm('Delete this image?')">

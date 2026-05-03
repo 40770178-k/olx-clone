@@ -1,17 +1,16 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Submit Complaint</title>
-</head>
-<body>
-    <h1>Submit a Complaint</h1>
+{% extends 'base.html' %}
+{% block title %}Submit Complaint{% endblock %}
+{% block content %}
+<div class="form-card">
+    <h1 class="h4">Submit a Complaint</h1>
+    <p class="text-muted">Upload your proof video so the admin can review your case quickly.</p>
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
-        <label for="proof_video">Upload Proof Video:</label>
-        <input type="file" name="proof_video" accept="video/*" required>
-        <button type="submit">Submit Complaint</button>
+        <div class="mb-3">
+            <label for="proof_video" class="form-label">Upload Proof Video</label>
+            <input type="file" name="proof_video" id="proof_video" accept="video/*" required>
+        </div>
+        <button type="submit" class="btn btn-danger">Submit Complaint</button>
     </form>
-</body>
-</html>
+</div>
+{% endblock %}

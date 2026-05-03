@@ -4,8 +4,27 @@ from django.contrib.auth import login
 from django.urls import reverse_lazy, reverse
 from django.utils import timezone
 from django.contrib import messages as django_messages
-from .forms import ItemForm, UserRegistrationForm, ProfileForm, ItemImageForm
-from .models import Item, Profile, Favorite, Conversation, Message, ItemImage, Escrow
+from .forms import (
+    ItemForm,
+    UserRegistrationForm,
+    ProfileForm,
+    ItemImageForm,
+    DeliveryConfirmationImageForm,
+    ComplaintForm,
+    SellerRatingForm,
+)
+from .models import (
+    Item,
+    Profile,
+    Favorite,
+    Conversation,
+    Message,
+    ItemImage,
+    Escrow,
+    DeliveryConfirmationImage,
+    Complaint,
+    SellerRating,
+)
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.shortcuts import get_object_or_404, redirect, render
@@ -79,6 +98,11 @@ class ItemDetailView(DetailView):
         
         # Add extra images to context
         context['extra_images'] = self.object.images.all()
+        if self.request.user.is_authenticated and self.request.user == self.object.posted_by:
+            context['seller_latest_escrow'] = Escrow.objects.filter(
+                item=self.object,
+                seller=self.request.user
+            ).order_by('-created_at').first()
         return context
 
 class ItemListView(ListView):
@@ -225,6 +249,7 @@ class ConversationDetailView(LoginRequiredMixin, TemplateView):
         conv.messages.filter(read=False).exclude(sender=user).update(read=True)
         ctx["conversation"] = conv
         ctx["messages"] = conv.messages.order_by("created_at")
+        ctx["conversation_escrow"] = Escrow.objects.filter(conversation=conv).order_by("-created_at").first()
         return ctx
 
 
@@ -342,6 +367,13 @@ class EscrowDetailView(LoginRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx['stripe_configured'] = is_stripe_configured()
+        escrow = self.object
+        user = self.request.user
+        ctx['confirmation_form'] = DeliveryConfirmationImageForm()
+        ctx['complaint_form'] = ComplaintForm()
+        existing_rating = SellerRating.objects.filter(escrow=escrow, buyer=user).first()
+        ctx['rating_form'] = SellerRatingForm(instance=existing_rating)
+        ctx['existing_rating'] = existing_rating
         return ctx
 
 
@@ -503,10 +535,6 @@ class MarkShippedView(LoginRequiredMixin, TemplateView):
         if escrow.seller != request.user:
             django_messages.error(request, "Not authorized.")
             return redirect('escrow-list')
-        if escrow.status != 'funded':
-            django_messages.error(request, "Cannot mark shipped in current state.")
-            return redirect('escrow-detail', pk=escrow.pk)
-
         escrow.status = 'shipped'
         escrow.save()
         django_messages.success(request, "Marked as shipped. Buyer can confirm receipt when they receive it.")
@@ -533,4 +561,71 @@ class EscrowDisputeView(LoginRequiredMixin, TemplateView):
         else:
             django_messages.error(request, f"Could not cancel payment: {err}")
 
+        return redirect('escrow-detail', pk=escrow.pk)
+
+
+class UploadDeliveryConfirmationView(LoginRequiredMixin, TemplateView):
+    """Buyer uploads delivery confirmation images."""
+
+    def post(self, request, *args, **kwargs):
+        escrow = get_object_or_404(Escrow, pk=kwargs['pk'])
+        if escrow.buyer != request.user:
+            django_messages.error(request, "Only the buyer can upload confirmation images.")
+            return redirect('escrow-list')
+
+        form = DeliveryConfirmationImageForm(request.POST, request.FILES)
+        if form.is_valid():
+            delivery_image = form.save(commit=False)
+            delivery_image.escrow = escrow
+            delivery_image.buyer = request.user
+            delivery_image.save()
+            django_messages.success(request, "Confirmation image uploaded.")
+        else:
+            django_messages.error(request, "Please upload a valid image file.")
+        return redirect('escrow-detail', pk=escrow.pk)
+
+
+class SubmitEscrowComplaintView(LoginRequiredMixin, TemplateView):
+    """Buyer submits a complaint with optional evidence."""
+
+    def post(self, request, *args, **kwargs):
+        escrow = get_object_or_404(Escrow, pk=kwargs['pk'])
+        if escrow.buyer != request.user:
+            django_messages.error(request, "Only the buyer can submit complaints.")
+            return redirect('escrow-list')
+
+        form = ComplaintForm(request.POST, request.FILES)
+        if form.is_valid():
+            complaint = form.save(commit=False)
+            complaint.item = escrow.item
+            complaint.escrow = escrow
+            complaint.buyer = request.user
+            complaint.save()
+            django_messages.success(request, "Complaint submitted. Support will review your evidence.")
+        else:
+            django_messages.error(request, "Please provide valid complaint details.")
+        return redirect('escrow-detail', pk=escrow.pk)
+
+
+class RateSellerView(LoginRequiredMixin, TemplateView):
+    """Buyer rates seller after successful completion."""
+
+    def post(self, request, *args, **kwargs):
+        escrow = get_object_or_404(Escrow, pk=kwargs['pk'])
+        if escrow.buyer != request.user:
+            django_messages.error(request, "Only the buyer can rate the seller.")
+            return redirect('escrow-list')
+
+        existing_rating = SellerRating.objects.filter(escrow=escrow, buyer=request.user).first()
+        form = SellerRatingForm(request.POST, instance=existing_rating)
+        if form.is_valid():
+            rating = form.save(commit=False)
+            rating.escrow = escrow
+            rating.item = escrow.item
+            rating.buyer = request.user
+            rating.seller = escrow.seller
+            rating.save()
+            django_messages.success(request, "Seller rating saved.")
+        else:
+            django_messages.error(request, "Please choose a valid star rating.")
         return redirect('escrow-detail', pk=escrow.pk)

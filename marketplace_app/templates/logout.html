@@ -3,9 +3,9 @@
 {% block content %}
     <h1>Logout</h1>
     <p>Are you sure you want to log out?</p>
-    <form method="post">
+    <form method="post" class="form-card">
         {% csrf_token %}
         <button type="submit" class="btn btn-danger">Yes, log me out</button>
     </form>
-    <p><a href="{% url 'home' %}">Cancel</a></p>
+    <p><a href="{% url 'home' %}" class="btn btn-link p-0">Cancel</a></p>
 {% endblock %}

@@ -80,6 +80,10 @@ header {
 }
 
 /* Navigation - Bootstrap override */
+.navbar {
+    background: var(--paper) !important;
+}
+
 .navbar-light .navbar-nav .nav-link {
     color: var(--text-muted);
     font-weight: 500;
@@ -149,6 +153,16 @@ header {
     background: var(--cream);
     border-color: var(--text-light);
     color: var(--text);
+}
+
+.btn-secondary {
+    background: #6f6a64;
+    border-color: #6f6a64;
+}
+
+.btn-secondary:hover {
+    background: #5f5a55;
+    border-color: #5f5a55;
 }
 
 /* Main Content */
@@ -455,4 +469,105 @@ form textarea:focus {
     .hero h2 {
         font-size: 1.5rem;
     }
+}
+
+/* Shared layout helpers */
+.page-intro {
+    margin-bottom: 1.25rem;
+}
+
+.section-card,
+.content-card {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-soft);
+    padding: 1.25rem;
+}
+
+.form-card {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-soft);
+    padding: 1.5rem;
+    max-width: 680px;
+}
+
+/* Keep inline utility forms untouched (logout/favorite actions) */
+form:not(.d-inline):not(.filter-form):not(#chat-form) {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-soft);
+    padding: 1.25rem;
+}
+
+form:not(.d-inline):not(.filter-form):not(#chat-form) p:last-child {
+    margin-bottom: 0;
+}
+
+input[type="file"] {
+    width: 100%;
+    border: 1px dashed var(--border);
+    border-radius: var(--radius-sm);
+    padding: 0.6rem 0.75rem;
+    background: #fff;
+}
+
+.btn {
+    border-radius: var(--radius-sm);
+    font-weight: 500;
+}
+
+.btn-link {
+    color: var(--primary);
+}
+
+.btn-link:hover {
+    color: var(--primary-hover);
+}
+
+.img-cover-200 {
+    height: 200px;
+    object-fit: cover;
+}
+
+.img-cover-100 {
+    height: 100px;
+    object-fit: cover;
+}
+
+.img-cover-80 {
+    height: 80px;
+    object-fit: cover;
+}
+
+.img-max-300 {
+    max-height: 300px;
+    object-fit: contain;
+}
+
+.gallery-thumbnail {
+    cursor: pointer;
+}
+
+#chat-window {
+    height: 400px;
+    overflow-y: auto;
+    background: #fafafa;
+}
+
+.plain-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.plain-list li {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 0.9rem 1rem;
+    margin-bottom: 0.75rem;
 }

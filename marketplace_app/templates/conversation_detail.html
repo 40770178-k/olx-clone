@@ -14,13 +14,28 @@
             <form method="post" action="{% url 'escrow-initiate-conversation' conversation.pk %}" class="d-inline">
                 {% csrf_token %}
                 <button type="submit" class="btn btn-primary btn-sm">
-                    <i class="bi bi-shield-check"></i> Pay with Escrow (${{ conversation.item.price }})
+                    <i class="bi bi-shield-check"></i> Pay with Escrow (KSh {{ conversation.item.price }})
                 </button>
             </form>
         </div>
     {% endif %}
+    {% if conversation_escrow %}
+        <div class="mb-3">
+            <a href="{% url 'escrow-detail' conversation_escrow.pk %}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-shield-lock"></i> View Escrow #{{ conversation_escrow.pk }}
+            </a>
+            {% if user.id == conversation.seller_id %}
+                <form method="post" action="{% url 'escrow-mark-shipped' conversation_escrow.pk %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary btn-sm">
+                        <i class="bi bi-truck"></i> Mark Item as Shipped
+                    </button>
+                </form>
+            {% endif %}
+        </div>
+    {% endif %}
 
-    <div id="chat-window" class="border rounded p-3 mb-3" style="height: 400px; overflow-y: auto; background: #fafafa;">
+    <div id="chat-window" class="border rounded p-3 mb-3">
         {% for m in messages %}
             <div class="mb-2 message-item {% if m.sender_id == user.id %}text-end{% endif %}" data-id="{{ m.id }}">
                 <div class="small text-muted">{% if m.sender_id == user.id %}You{% else %}{{ m.sender.username }}{% endif %} • {{ m.created_at|date:"M d, Y H:i" }}</div>

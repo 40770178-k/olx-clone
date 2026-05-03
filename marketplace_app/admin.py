@@ -1,5 +1,14 @@
 from django.contrib import admin
-from .models import Item, Conversation, Message, ItemImage, Escrow, Complaint
+from .models import (
+    Item,
+    Conversation,
+    Message,
+    ItemImage,
+    Escrow,
+    Complaint,
+    DeliveryConfirmationImage,
+    SellerRating,
+)
 
 # Register your models here.
 @admin.register(Item)
@@ -77,3 +86,19 @@ class ComplaintAdmin(admin.ModelAdmin):
     approve_complaint.short_description = 'Approve selected complaints'
 
     actions = [approve_complaint]
+
+
+@admin.register(DeliveryConfirmationImage)
+class DeliveryConfirmationImageAdmin(admin.ModelAdmin):
+    list_display = ['escrow', 'buyer', 'uploaded_at']
+    list_filter = ['uploaded_at']
+    search_fields = ['escrow__id', 'buyer__username', 'escrow__item__title']
+    ordering = ['-uploaded_at']
+
+
+@admin.register(SellerRating)
+class SellerRatingAdmin(admin.ModelAdmin):
+    list_display = ['escrow', 'seller', 'buyer', 'stars', 'created_at']
+    list_filter = ['stars', 'created_at']
+    search_fields = ['seller__username', 'buyer__username', 'item__title']
+    ordering = ['-created_at']

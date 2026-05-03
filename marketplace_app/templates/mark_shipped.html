@@ -1,15 +1,12 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mark Item as Shipped</title>
-</head>
-<body>
-    <h1>Mark Item as Shipped</h1>
+{% extends 'base.html' %}
+{% block title %}Mark as Shipped{% endblock %}
+{% block content %}
+<div class="form-card">
+    <h1 class="h4">Mark Item as Shipped</h1>
+    <p class="text-muted">Confirm shipment to update this escrow transaction.</p>
     <form method="post">
         {% csrf_token %}
-        <button type="submit">Confirm Shipment</button>
+        <button type="submit" class="btn btn-primary">Confirm Shipment</button>
     </form>
-</body>
-</html>
+</div>
+{% endblock %}
