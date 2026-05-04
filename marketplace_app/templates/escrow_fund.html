@@ -2,14 +2,12 @@
 {% block title %}Fund Escrow (Prototype){% endblock %}
 {% block content %}
 <div class="form-card">
-    <h2 class="h4 mb-2">Fund Escrow (Prototype)</h2>
+    <h2 class="h4 mb-2">Fund Escrow </h2>
     <p class="text-muted mb-3">
-        Enter bank details to simulate payment. No real money is processed in this prototype.
+        Enter bank details to simulate payment.
     </p>
 
-    <div class="alert alert-warning">
-        <strong>Prototype mode:</strong> Sensitive values are obfuscated before storage and only masked details are shown.
-    </div>
+    
 
     <form method="post">
         {% csrf_token %}

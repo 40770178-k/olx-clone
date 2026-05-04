@@ -1,4 +1,4 @@
-from django.contrib import admin
+from django.contrib import admin  # pyright: ignore[reportMissingImports]
 from .models import (
     Item,
     Conversation,
