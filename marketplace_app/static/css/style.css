@@ -194,47 +194,27 @@ main {
     font-size: 1.1rem;
 }
 
-/* Cards - warm, human layout */
+/* New Card Styles */
 .card {
-    background: var(--paper);
+    background-color: var(--cream);
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-soft);
-    overflow: hidden;
-    transition: box-shadow 0.25s, transform 0.2s, border-color 0.2s;
-    position: relative;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
 }
 
-.card::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 4px;
-    background: var(--primary);
-    opacity: 0;
-    transition: opacity 0.2s;
+.card-body {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
-.card:hover {
-    box-shadow: var(--shadow-lift);
-    transform: translateY(-3px);
-    border-color: rgba(196, 92, 38, 0.2);
-}
-
-.card:hover::before {
-    opacity: 1;
-}
-
-/* Card image - slight organic crop */
 .card-img-top {
     border-bottom: 1px solid var(--border);
-}
-
-/* Card body */
-.card-body {
-    padding: 1.25rem;
 }
 
 .card-title {
@@ -263,6 +243,12 @@ main {
     padding: 0.75rem 1.25rem;
 }
 
+/* Align cards in a grid layout */
+.card-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
 
 /* Filter form */
 .filter-form {
